@@ -68,3 +68,35 @@ function addPatient(name, age) {
 console.log("\nPatients older than 30:", filterByAge(30));
 addPatient("David", 52);
 console.log("All patients after adding David:", patients);
+
+//2.6. Error handling and Validation
+function createAppointment ( doctor , patient , date ) {
+    if (! doctor || ! patient || ! date ) {
+        throw new Error (" Missing required fields ") ;
+    }
+    return { doctor , patient , date };
+}
+
+try {
+    console . log ( createAppointment ("Dr. Lee", " Alice ", " 2025 -03 -15 ") ) ;
+    console . log ( createAppointment ("Dr. Lee") ) ; // should trigger error
+} catch ( err ) {
+    console . error (" Error :", err . message ) ;
+}
+
+//2.7. Asynchronous Code
+function getHospitalData() {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve({ name : " Central Hospital ", uptime : 1234 });
+        } , 1000);
+    });
+}
+
+async function showData () {
+    console.log(" Fetching hospital data ...")
+    const data = await getHospitalData();
+    console.log(" Data loaded :", data );
+}
+
+showData () ;
