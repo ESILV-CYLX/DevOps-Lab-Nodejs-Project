@@ -49,3 +49,22 @@ console.log("Patient's nbr of conditions:", patient.conditions.length);
 console.log(patient.name + " is treated by " + patient.doctor.name + " (" + patient.doctor.specialty + ").");
 
 patient.conditions.push("anxiety");
+
+//2.4 Functions and Array Filtering
+const patients = [
+    { id: 1, name: "Alice", age: 34},
+    { id: 2, name: "John", age:45},
+    { id: 3, name: "Marie", age: 29}
+];
+
+function filterByAge(minAge) {
+    return patients.filter(patient => patient.age > minAge);
+}
+
+function addPatient(name, age) {
+    return patients.push({ id: patients.length + 1, name: name, age: age});
+}
+
+console.log("\nPatients older than 30:", filterByAge(30));
+addPatient("David", 52);
+console.log("All patients after adding David:", patients);
