@@ -1,4 +1,4 @@
-// 2.1 Variables and Data Types
+// 2.1. Variables and Data Types
 let hospitalName = "Central Hospital";
 let nbrDoctors = 12;
 let open = true;
@@ -10,7 +10,7 @@ else {
     console.log("Sorry, we are closed now.");
 }
 
-//2.2 Working with Arrays and Loops
+//2.2. Working with Arrays and Loops
 let doctors = ["Lee", "Khan","Smith","Patel","Garcia"];
 
 function listDoctors(docArray) {
@@ -36,3 +36,16 @@ function findDoctor(docArray, name) {
 console.log("\nDoes Dr. Smith work here ? " + findDoctor(doctors, "Smith"));
 console.log("Does Dr. Brown work here ? " + findDoctor(doctors, "Brown"));
 
+//2.3. Objects and Nested Data
+const patient = {
+    name: "Alice Martin",
+    age: 34,
+    conditions: ["diabetes", "hypertension"],
+    doctor: { name : "Dr. Lee", specialty: "Cardiology"}
+};
+
+console.log("Patient's doctor:", patient.doctor.name);
+console.log("Patient's nbr of conditions:", patient.conditions.length);
+console.log(patient.name + " is treated by " + patient.doctor.name + " (" + patient.doctor.specialty + ").");
+
+patient.conditions.push("anxiety");
