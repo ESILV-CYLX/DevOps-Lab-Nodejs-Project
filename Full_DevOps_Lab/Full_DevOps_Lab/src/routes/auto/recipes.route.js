@@ -8,13 +8,23 @@ let recipes = [];
 // GET /recipes
 router.get('/', (req, res) => res.json(recipes));
 
+// GET /recipes/:recipeId
+router.get("/:recipeId", (req, res) => {
+    const id = parseInt(req.params.recipeId);
+    const recipe = recipe.find(r => r.recipeId === id);
+
+    if (!recipe) return res.status(404).json({ error: "Recipe not found" });
+
+    //TODO Favoriser les recettes publiques ou appartenant à l'utilisateur connecté
+    res.json(recipe);
+});
+
+
 // POST /recipes
 router.post('/', (req, res) => {
-    if (!req.body.title || !req.body.description) {
-        return res.status(400).json({ error: 'Missing title or description' });
-    }
-
     const { recipeId, title, description, prepTime, cookTime, difficulty, cuisineType, servings, tags, instructions, privacy } = req.body;
+    if (!recipeId || !title || !description || !cuisineType || !instructions) return res.status(400).json({ error: 'Missing title or description' });
+    
     const newRecipe = new Recipe(recipeId, title, description, prepTime, cookTime, difficulty, cuisineType, servings, tags, instructions, privacy);
     recipes.push(newRecipe);
     res.status(201).json(newRecipe);
@@ -22,8 +32,8 @@ router.post('/', (req, res) => {
 
 // PUT /recipes/:id
 router.put('/:id', (req, res) => {
-    const { id } = req.params;
-    const index = recipes.findIndex(r => r.recipeId.toString() === id);
+    const id  = parseInt(req.params);
+    const index = recipes.findIndex(r => r.recipeId === id);
     if (index === -1) return res.status(404).json({ error: 'Recipe not found' });
 
     const updatedRecipeData = req.body;
@@ -40,6 +50,7 @@ router.put('/:id', (req, res) => {
         updatedRecipeData.instructions,
         updatedRecipeData.privacy
     );
+    
     recipes[index] = updatedRecipe;
     res.json(updatedRecipe);
 });
@@ -49,8 +60,10 @@ router.delete('/:id', (req, res) => {
     const { id } = req.params;
     const index = recipes.findIndex(r => r.recipeId.toString() === id);
     if (index === -1) return res.status(404).json({ error: 'Recipe not found' });
+    
     recipes.splice(index, 1);
     res.status(204).send();
 });
 
+export { recipes }; // for testing purposes
 export default router;
