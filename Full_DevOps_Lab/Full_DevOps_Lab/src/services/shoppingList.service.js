@@ -1,5 +1,5 @@
-const ShoppingList = require('../models/ShoppingList.model');
-const MealPlan = require('../models/MealPlan.model');
+const ShoppingList = require('../models/ShoppingList'); // plus de .model
+const MealPlan = require('../models/MealPlan');
 
 // 1. Récupérer la liste (GET)
 const getListByUserId = async (userId) => {
