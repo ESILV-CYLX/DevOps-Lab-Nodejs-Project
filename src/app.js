@@ -1,0 +1,32 @@
+import express from "express";
+import { errorHandler } from "./utils/errorHandler.js";
+
+// 1. IMPORTS MANUELS DES ROUTES (On arrête l'auto-mount qui bug)
+// Attention aux chemins relatifs !
+import authRouter from "./routes/auto/auth.route.js";
+import usersRouter from "./routes/auto/users.route.js";
+import recipesRouter from "./routes/auto/recipes.route.js";
+import shoppingListRouter from "./routes/shoppingList.route.js";
+
+const app = express();
+
+// 2. MIDDLEWARE JSON (Vital pour que les POST marchent)
+app.use(express.json());
+
+// 3. BRANCHEMENT MANUEL DES ROUTES
+app.use("/auth", authRouter);
+app.use("/users", usersRouter);
+app.use("/recipes", recipesRouter);
+app.use("/shopping-list", shoppingListRouter);
+
+// Routes de base
+app.get("/", (_req, res) => res.json({ ok: true }));
+app.get("/health", (_req, res) => res.status(200).send("OK"));
+
+// Pour le test de version qui échouait
+app.get("/version", (_req, res) => res.json({ version: "1.0.0" }));
+
+// Gestion des erreurs
+app.use(errorHandler);
+
+export default app;
