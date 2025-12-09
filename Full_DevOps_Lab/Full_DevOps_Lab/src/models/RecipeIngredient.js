@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 import IngredientModel from "./Ingredient.js";
+import { IngredientCategory } from "./enums/IngredientCategory.js";
 
 //Recipe Ingredient Schema for MongoDB
 const recipeIngredientSchema = new mongoose.Schema({
     recipeIngredientId: { type: Number, required: true, unique: true},
     ingredient: { type: IngredientModel.schema, required: true},
     unit: { type: String, required: true},
-    quantity: { type: Number, required: true},
-    category: { type: String, required: true}
+    quantity: { type: Number, required: true}
 });
 
 //ESM export

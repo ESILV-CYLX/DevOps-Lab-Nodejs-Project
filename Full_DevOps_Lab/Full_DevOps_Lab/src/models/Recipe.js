@@ -8,7 +8,7 @@ const recipeSchema = new mongoose.Schema({
     prepTime:    { type: String, required: true },
     cookTime:    { type: String, required: true },
     difficulty:  { type: Number, required: true },
-    cuisineType: { type: String, required: true },
+    cuisineType: { type: String, required: true }, //TODO voir si ici énum ?
     servings:    { type: Number, required: true },
     tags:        { type: [String], default: [] },
     instructions:{ type: [String], default: [] },
