@@ -3,11 +3,17 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGO_URI; 
 
 export const connectToDb = async () => {
+
+  if (mongoose.connection.readyState === 1) { 
+    console.log("✅ SUCCESS: Mongoose already connected (Skipping connection).");
+    return;
+  }
+  
   try {
-    mongoose.set('strictQuery', false);
+    mongoose.set('strictQuery', false); 
     
     const conn = await mongoose.connect(MONGO_URI);
 

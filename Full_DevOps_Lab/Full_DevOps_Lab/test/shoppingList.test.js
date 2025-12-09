@@ -3,6 +3,7 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import app from '../src/app'; // Vérifie que c'est bien ../src/app
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 describe("Shopping List API (with InMemory DB)", () => {
   let mongoServer;
