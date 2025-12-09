@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app from '../src/app.js';
 import { recipes } from '../src/routes/auto/recipes.route.js';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 
 //TODO be careful before running tests: DELETES THE WHOLE RECIPES ARRAY !!!!!
 beforeEach(() => {

@@ -2,6 +2,7 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import app from '../src/app.js';
 import { users } from '../src/routes/auto/users.route.js';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 
 const JWT_SECRET = "secret_key_example"; //TODO remove once env works...
 

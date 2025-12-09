@@ -2,6 +2,7 @@ import request from 'supertest';
 import app from '../src/app.js';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 
 describe("Auth API", () => {
     let mongoServer;
