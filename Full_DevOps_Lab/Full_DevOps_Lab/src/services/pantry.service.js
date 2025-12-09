@@ -1,27 +1,30 @@
-import { pantry, updatePantry } from "../data/pantry.data.js";
+import Pantry from "../models/Pantry.js";
 
-export function getPantry() {
-    return pantry;
+// Get all pantry items
+export async function getPantry() {
+    return Pantry.find();
 }
 
-export function addToPantry(id, quantity) {
+// Add or update ingredient
+export async function addToPantry(id, quantity) {
     if (quantity <= 0) throw new Error("INVALID_QUANTITY");
 
-    const index = pantry.findIndex(item => item.id === id);
+    const existing = await Pantry.findOne({ id });
 
-    if (index !== -1) {
-        pantry[index].quantity += quantity;
-        return pantry[index];
+    if (existing) {
+        existing.quantity += quantity;
+        await existing.save();
+        return existing;
     }
 
-    const newIngredient = { id, quantity };
-    pantry.push(newIngredient);
+    const newIngredient = new Pantry({ id, quantity });
+    await newIngredient.save();
     return newIngredient;
 }
 
-export function deleteFromPantry(id) {
-    const index = pantry.findIndex(item => item.id === id);
-    if (index === -1) throw new Error("NOT_FOUND");
-
-    pantry.splice(index, 1);
+// Delete ingredient
+export async function deleteFromPantry(id) {
+    const deleted = await Pantry.findOneAndDelete({ id });
+    if (!deleted) throw new Error("NOT_FOUND");
+    return deleted;
 }
