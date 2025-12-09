@@ -8,7 +8,7 @@ import authRouter from "./routes/auto/auth.route.js";
 import usersRouter from "./routes/auto/users.route.js";
 import recipesRouter from "./routes/auto/recipes.route.js";
 import shoppingListRouter from "./routes/shoppingList.route.js";
-import plannerRouter from ".routes/planner.route.js";
+import plannerRouter from "./routes/auto/planner.route.js";
 const app = express();
 
 // 2. MIDDLEWARE JSON (Vital pour que les POST marchent)
