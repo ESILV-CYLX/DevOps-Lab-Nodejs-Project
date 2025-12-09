@@ -1,6 +1,6 @@
 import express from 'express';
 // Attention à l'extension .js à la fin, c'est OBLIGATOIRE en ES Modules
-import shoppingController from '../controllers/shoppingList.controller.js';
+import shoppingController from '../../controllers/shoppingList.controller.js';
 
 const router = express.Router();
 

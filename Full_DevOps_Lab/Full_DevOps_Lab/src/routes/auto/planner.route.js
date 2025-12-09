@@ -1,6 +1,7 @@
 // planner (GET, POST, PUT)
 import express from "express";
 import { getMealPlans, createMealPlan, updateMealPlan} from "../../controllers/planner.controller.js";
+import authenticateToken from "../../middleware/auth.middleware.js";
 
 const router = express.Router();
 
@@ -12,8 +13,8 @@ const router = express.Router();
 
 router.use(authenticateToken);
 
-router.get("/", getPlanner);
-router.post("/", updatePlanner);
-router.put("/:id", createPlanner);
+router.get("/", getMealPlans);
+router.post("/", updateMealPlan);
+router.put("/:id", createMealPlan);
 
 export default router;

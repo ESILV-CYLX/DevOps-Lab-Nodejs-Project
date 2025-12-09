@@ -3,7 +3,7 @@ import {
     getPantryController,
     addPantryController,
     deletePantryController
-} from "../controllers/pantry.controller.js";
+} from "../../controllers/pantry.controller.js";
 
 const router = express.Router();
 
