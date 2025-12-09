@@ -7,7 +7,7 @@ export const getListByUserId = async (userId) => {
 
 export const generateListFromPlanner = async (userId, mealPlanId) => {
   
-  const mealPlan = await MealPlan.findById(mealPlanId).populate('recipes');
+  const mealPlan = await MealPlan.findById(mealPlanId);
 
   if (!mealPlan) {
     throw new Error("Meal Plan introuvable");

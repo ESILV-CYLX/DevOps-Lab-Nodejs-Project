@@ -1,22 +1,27 @@
-//Connection to MongoDB using Mongoose
-import { MongoClient } from "mongodb";
-import dotenv from "dotenv";
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
 dotenv.config();
 
-const client = new MongoClient (process.env.MONGO_URI);
-let db;
+const MONGO_URI = process.env.MONGO_URI;
 
-export async function connectToDb(){
+export const connectToDb = async () => {
   try {
-    await client.connect();
-    db = client.db();
-    console.log("SUCCESS: MongoDB connected: ", db.databaseName);
+    mongoose.set('strictQuery', false);
+    
+    const conn = await mongoose.connect(MONGO_URI);
+
+    console.log(`✅ SUCCESS: Connected to MongoDB via Mongoose: ${conn.connection.name}`);
   } catch (err) {
-    console.error("ERROR: Database connection failed", err);
+    console.error(`❌ ERROR: Database connection failed: ${err.message}`);
     process.exit(1);
   }
 };
 
+
 export function getDb() {
-  return db;
+  if (!mongoose.connection.readyState) {
+    throw new Error("Database not connected via Mongoose yet.");
+  }
+  return mongoose.connection.db;
 }
