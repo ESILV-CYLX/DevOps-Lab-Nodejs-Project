@@ -7,7 +7,7 @@ import authRouter from "./routes/auto/auth.route.js";
 import usersRouter from "./routes/auto/users.route.js";
 import recipesRouter from "./routes/auto/recipes.route.js";
 import shoppingListRouter from "./routes/shoppingList.route.js";
-
+import plannerRouter from ".routes/planner.route.js";
 const app = express();
 
 // 2. MIDDLEWARE JSON (Vital pour que les POST marchent)
@@ -18,6 +18,7 @@ app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/recipes", recipesRouter);
 app.use("/shopping-list", shoppingListRouter);
+app.use("/planner", plannerRouter);
 
 // Routes de base
 app.get("/", (_req, res) => res.json({ ok: true }));
