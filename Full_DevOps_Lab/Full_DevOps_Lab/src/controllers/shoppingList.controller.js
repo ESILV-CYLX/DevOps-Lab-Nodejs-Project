@@ -80,7 +80,7 @@ const deleteItem = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   getShoppingList,
   generateList,
   addItem,
