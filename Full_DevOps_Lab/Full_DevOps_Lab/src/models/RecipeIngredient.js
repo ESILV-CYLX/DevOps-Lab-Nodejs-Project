@@ -7,12 +7,7 @@ const recipeIngredientSchema = new mongoose.Schema({
     recipeIngredientId: { type: Number, required: true, unique: true},
     ingredient: { type: IngredientModel.schema, required: true},
     unit: { type: String, required: true},
-    quantity: { type: Number, required: true},
-    category:  { 
-        type: String, 
-        enum: Object.values(IngredientCategory), 
-        required: true 
-    }
+    quantity: { type: Number, required: true}
 });
 
 //ESM export
