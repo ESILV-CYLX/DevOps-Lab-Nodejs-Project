@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import IngredientModel from "./Ingredient.js";
+import { IngredientCategory } from "./enums/IngredientCategory.js";
 
 //Recipe Ingredient Schema for MongoDB
 const recipeIngredientSchema = new mongoose.Schema({
@@ -7,7 +8,11 @@ const recipeIngredientSchema = new mongoose.Schema({
     ingredient: { type: IngredientModel.schema, required: true},
     unit: { type: String, required: true},
     quantity: { type: Number, required: true},
-    category: { type: String, required: true}
+    category:  { 
+        type: String, 
+        enum: Object.values(IngredientCategory), 
+        required: true 
+    }
 });
 
 //ESM export

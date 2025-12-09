@@ -1,18 +1,10 @@
 import mongoose from 'mongoose';
+import ShoppingItemModel from './ShoppingItem.js';
 
-// Définition de l'item
-const ShoppingItemSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  quantity: { type: Number, required: true },
-  unit: { type: String, default: 'unit' },
-  category: { type: String, default: 'Divers' },
-  checked: { type: Boolean, default: false }
-});
-
-// Définition de la liste
+// Shopping List Schema for MongoDB
 const ShoppingListSchema = new mongoose.Schema({
   userId: { type: String, required: true, unique: true },
-  items: [ShoppingItemSchema], // Tableau d'items
+  items: { type: [ShoppingItemModel.schema], default: []},
   updatedAt: { type: Date, default: Date.now }
 });
 
