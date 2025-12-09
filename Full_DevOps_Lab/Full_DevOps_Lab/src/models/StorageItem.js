@@ -1,16 +1,15 @@
-export class StorageItem {
-  /**
-   * @param {number} storageItemId
-   * @param {Ingredient} ingredient
-   * @param {number} quantity
-   * @param {string} unit
-   * @param {boolean} isLeftover
-   */
-  constructor(storageItemId, ingredient, quantity, unit, isLeftover) {
-    this.storageItemId = storageItemId;
-    this.ingredient = ingredient;
-    this.quantity = quantity;
-    this.unit = unit;
-    this.isLeftover = isLeftover;
-  }
-}
+import mongoose from "mongoose";
+import IngredientModel from "./Ingredient.js";
+
+//Storage Item Schema for MongoDB
+const storageItemSchema = new mongoose.Schema({
+    storageItemId: { type: Number, required: true, unique: true},
+    ingredient: { type: IngredientModel.schema, required: true},
+    quantity: { type: Number, required: true},
+    unit: { type: String, required: true},
+    isLeftover: { type: Boolean, required: true}
+});
+
+//ESM export
+const StorageItemModel = mongoose.model("StorageItem", storageItemSchema);
+export default StorageItemModel;

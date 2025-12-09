@@ -1,26 +1,44 @@
 import request from 'supertest';
 import app from '../src/app.js';
-import { users } from '../src/routes/auto/auth.route.js';
-
-beforeEach(() => {
-    users.length = 0;
-});
+import mongoose from 'mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 describe("Auth API", () => {
+    let mongoServer;
+    let testUserId = "user_test_mongo_" + Date.now(); // ID unique pour éviter les conflits
+    let itemIdToDelete;
+
+    // AVANT TOUT : On lance le mini-MongoDB
+    beforeAll(async () => {
+        mongoServer = await MongoMemoryServer.create();
+        const uri = mongoServer.getUri();
+        
+        // On connecte Mongoose à ce mini-serveur
+        await mongoose.connect(uri);
+    });
+
+    // APRES TOUT : On éteint tout proprement
+    afterAll(async () => {
+        await mongoose.disconnect();
+        await mongoServer.stop();
+    });
 
     // POST /auth/signup - creates a new user
     it("POST /auth/signup should create a new user", async () => {
         const res = await request(app)
         .post("/auth/signup")
         .send({
-            username: "alice",
-            email: "alice@example.com",
-            password: "password123"
+            userId: testUserId,
+            item: {
+                username: "alice",
+                email: "alice@example.com",
+                password: "password123"
+            }
         });
 
         expect(res.status).toBe(201);
         expect(res.body).toHaveProperty("message", "Signup successful, try login with the new account!");
-        expect(users.length).toBe(1);
+        expect(res.body.items.length).toBeGreaterThan(0);
     });
 
     // POST /auth/signup - error because username already exists in users array
@@ -37,6 +55,11 @@ describe("Auth API", () => {
 
         expect(res.status).toBe(409);
         expect(res.body).toHaveProperty("error", "Username already exists");
+
+        // On sauvegarde l'ID généré par MongoDB pour les tests suivants
+        // Attention: parfois l'ID est dans _id, parfois id
+        const createdItem = res.body.items.find(i => i.name === "Mangue");
+        itemIdToDelete = createdItem._id;
     });
 
     // POST /auth/signup - error because email already exists in users array

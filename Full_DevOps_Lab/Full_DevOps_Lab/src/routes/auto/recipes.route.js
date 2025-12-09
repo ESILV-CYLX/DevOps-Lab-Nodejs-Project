@@ -1,6 +1,6 @@
 // /recipes (GET, POST, PUT, DELETE)
 import express from 'express';
-import { Recipe } from './Recipe.js';
+import Recipe from '../../models/Recipe.js';
 
 const router = express.Router();
 let recipes = [];

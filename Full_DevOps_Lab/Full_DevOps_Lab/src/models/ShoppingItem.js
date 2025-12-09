@@ -1,22 +1,20 @@
-export class ShoppingItem {
-  /**
-   * @param {number} itemId
-   * @param {Ingredient} ingredient
-   * @param {RecipeIngredient[]} recipeIngredients
-   * @param {number} quantity
-   * @param {string} unit
-   * @param {string|null} category
-   * @param {boolean} isChecked
-   * @param {number} shoppingListId
-   */
-  constructor(itemId, ingredient, recipeIngredients, quantity, unit, category = null, isChecked = false, shoppingListId) {
-    this.itemId = itemId;
-    this.ingredient = ingredient;
-    this.recipeIngredients = recipeIngredients;
-    this.quantity = quantity;
-    this.unit = unit;
-    this.category = category;
-    this.isChecked = isChecked;
-    this.shoppingListId = shoppingListId;
-  }
-}
+import IngredientModel from "./Ingredient.js";
+import RecipeIngredient from "./RecipeIngredient.js";
+import mongoose from "mongoose";
+
+
+//Shopping Item Schema for MongoDB
+const shoppingItemSchema = new mongoose.Schema({
+    itemId: { type: Number, required: true, unique: true},
+    ingredient: { type: IngredientModel.schema, required: true},
+    recipeIngredients: { type: [RecipeIngredient.schema], default: []},
+    quantity: { type: Number, required: true},
+    unit: { type: String, required: true},
+    category: { type: String, default: null},
+    isChecked: { type: Boolean, required: true},
+    shoppingListId: { type: Number, required: true}
+});
+
+//ESM export
+const ShoppingItemModel = mongoose.model("ShoppingItem", shoppingItemSchema);
+export default ShoppingItemModel;

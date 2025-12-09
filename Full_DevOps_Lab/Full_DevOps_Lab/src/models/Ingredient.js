@@ -1,14 +1,13 @@
-export class Ingredient {
-  /**
-   * @param {number} ingredientId
-   * @param {string} name
-   * @param {string} category
-   * @param {number} price
-   */
-  constructor(ingredientId, name, category, price) {
-    this.ingredientId = ingredientId;
-    this.name = name;
-    this.category = category;
-    this.price = price;
-  }
-}
+import mongoose from "mongoose";
+
+//Ingredient Schema for embedding
+const ingredientSchema = new mongoose.Schema({
+    ingredientId: { type: Number, required: true, unique: true},
+    name: { type: String, required: true},
+    category: { type: String, required: true},
+    price: { type: Number, required: true}
+});
+
+//ESM export
+const IngredientModel = mongoose.model("Ingredient", ingredientSchema);
+export default IngredientModel;

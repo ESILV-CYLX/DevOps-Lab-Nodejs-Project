@@ -1,36 +1,20 @@
-export class Recipe {
-    /**
-     * @param {number} recipeId
-     * @param {string} title
-     * @param {string} description
-     * @param {string} prepTime
-     * @param {string} cookTime
-     * @param {number} difficulty
-     * @param {string} cuisineType
-     * @param {number} servings
-     * @param {string[]} tags
-     * @param {string[]} instructions
-     * @param {string[]} ingredients
-     * @param {boolean} privacy
-     */
-    constructor(recipeId, title, description, prepTime, cookTime, difficulty, cuisineType, servings, tags, instructions, privacy) {
-        this.recipeId = recipeId;
-        this.title = title;
-        this.description = description;
-        this.prepTime = prepTime;
-        this.cookTime = cookTime;
-        this.difficulty = difficulty;
-        this.cuisineType = cuisineType;
-        this.servings = servings;
-        this.tags = tags;
-        this.instructions = instructions;
-        this.ingredients = [];
-        this.privacy = privacy;
-    }
+import mongoose from "mongoose";
 
-    //TODO
-    addIngredient(ingredient){}
-    removeIngredient(ingredientId){}
-    modifyServingSize(newSize){}
+// Recipe Schema for MongoDB
+const recipeSchema = new mongoose.Schema({
+    recipeId:    { type: Number, required: true },
+    title:       { type: String, required: true },
+    description: { type: String, required: true },
+    prepTime:    { type: String, required: true },
+    cookTime:    { type: String, required: true },
+    difficulty:  { type: Number, required: true },
+    cuisineType: { type: String, required: true },
+    servings:    { type: Number, required: true },
+    tags:        { type: [String], default: [] },
+    instructions:{ type: [String], default: [] },
+    privacy:     { type: Boolean, default: false }
+});
 
-}
+//ESM export
+const RecipeModel = mongoose.model("Recipe", recipeSchema);
+export default RecipeModel;

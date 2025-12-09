@@ -1,23 +1,15 @@
-export class User {
-    /** 
-     * @param {number} userId
-     * @param {string} username
-     * @param {string} email
-     * @param {string} password
-     * @param {string[]} dietaryPreferences
-     * @param {number} servingSize
-     */
-    constructor(userId, username, email, password, dietaryPreferences, servingSize){
-        this.userId = userId;
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.dietaryPreferences = dietaryPreferences;
-        this.servingSize = servingSize;
-    }
-    
-    //TODO
-    login(){}
-    logout(){}
-    updateProdile(){}
-}
+import mongoose from "mongoose";
+
+// User Schema for MongoDB
+const userSchema = new mongoose.Schema({
+    userId:  { type: Number, required: true, unique: true},
+    username: { type: String, required: true, unique: true},
+    email:    { type: String, required: true, unique: true},
+    password: { type: String, required: true},
+    dietaryPreferences: { type: [String], default: []},
+    servingSize: { type: Number, default: 1}
+});
+
+//ESM export
+const User = mongoose.model("User", userSchema);
+export default User;

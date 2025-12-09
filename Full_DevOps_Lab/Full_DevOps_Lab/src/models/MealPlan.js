@@ -1,29 +1,19 @@
-import { MealSlot } from "./MealSlot";
+import mongoose from "mongoose";
+import RecipeModel from "./Recipe.js";
+import MealSlotModel from "./MealSlot.js";
 
-export class MealPlan {
-    /**
-     * @param {number} mealPlanId
-     * @param {number} userId
-     * @param {Date} weekStartDate
-     * @param {Date} weekEndDate
-     * @param {boolean} state
-     * @param {boolean} privacy
-     * @param {Recipe[]} recipes
-     * @param {MealSlot[]} mealSlots
-     */
-    constructor(mealPlanId, userId, weekStartDate, weekEndDate, state, privacy){
-        this.mealPlanId = mealPlanId;
-        this.userId = userId;
-        this.weekStartDate = weekStartDate;
-        this.weekEndDate = weekEndDate;
-        this.state = state;
-        this.privacy = privacy;
-        this.recipes = [];
-        this.mealSlots = [];
-    }
-    
-    addRecipe(recipe) {}
-    removeRecipe(recipeId) {}
-    addMealSlot(slot) {}
-    removeMealSlot(slotId) {}
-}
+// MealPlan Schema for MongoDB
+const mealPlanSchema = new mongoose.Schema({
+    mealPlanId:   { type: Number, required: true, unique: true },
+    userId:       { type: Number, required: true },
+    weekStartDate:{ type: Date, required: true },
+    weekEndDate:  { type: Date, required: true },
+    state:        { type: Boolean, default: true },
+    privacy:      { type: Boolean, default: false },
+    recipes:      { type: [RecipeModel.schema], default: [] }, // Array of Recipes objects
+    mealSlots:    { type: [MealSlotModel.schema], default: [] }  // Array of MealSlot objects
+});
+
+//ESM export
+const MealPlanModel = mongoose.model("MealPlan", mealPlanSchema);
+export default MealPlanModel;

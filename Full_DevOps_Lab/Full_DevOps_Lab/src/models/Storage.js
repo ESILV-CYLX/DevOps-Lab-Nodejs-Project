@@ -1,16 +1,12 @@
-export class Storage {
-  /**
-   * @param {number} storageId
-   * @param {number} userId
-   * @param {string} type
-   */
-  constructor(storageId, userId, type) {
-    this.storageId = storageId;
-    this.userId = userId;
-    this.type = type;
-    this.items = [];
-  }
+import mongoose from "mongoose";
 
-  addItem(item) {}
-  removeItem(itemId) {}
-}
+// Storage Schema for MongoDB
+const storageSchema = new mongoose.Schema({
+    storageId: { type: Number, required: true, unique: true},
+    userId: { type: Number, required: true},
+    type: { type: String, required: true}
+});
+
+//ESM export
+const StorageModel = mongoose.model("Storage", storageSchema);
+export default StorageModel;
