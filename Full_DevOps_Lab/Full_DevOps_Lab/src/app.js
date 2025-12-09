@@ -1,5 +1,6 @@
 import express from "express";
 import { errorHandler } from "./utils/errorHandler.js";
+import { connectToDb } from "./db/mongo.js";
 
 // 1. IMPORTS MANUELS DES ROUTES (On arrête l'auto-mount qui bug)
 // Attention aux chemins relatifs !
@@ -12,6 +13,8 @@ const app = express();
 
 // 2. MIDDLEWARE JSON (Vital pour que les POST marchent)
 app.use(express.json());
+
+connectToDb();
 
 // 3. BRANCHEMENT MANUEL DES ROUTES
 app.use("/auth", authRouter);
