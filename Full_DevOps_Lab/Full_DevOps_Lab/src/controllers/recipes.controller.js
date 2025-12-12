@@ -24,7 +24,11 @@ export const getRecipeById = async (req, res) => {
 // POST /recipes
 export const createRecipe = async (req, res) => {
     try {
-        const newRecipe = await recipeService.createRecipe(req.body);
+        // On fusionne les données du formulaire (req.body) avec l'ID du user connecté (req.user.userId)
+        // req.user vient du middleware authenticateToken
+        const recipeData = { ...req.body, userId: req.userId };
+        
+        const newRecipe = await recipeService.createRecipe(recipeData);
         res.status(201).json(newRecipe);
     } catch (err) {
         res.status(400).json({ error: err.message });

@@ -1,6 +1,7 @@
 import express from "express";
 import { errorHandler } from "./utils/errorHandler.js";
 import { connectToDb } from "./db/mongo.js";
+import cors from 'cors';
 
 // 1. IMPORTS MANUELS DES ROUTES (On arrête l'auto-mount qui bug)
 // Attention aux chemins relatifs !
@@ -13,9 +14,11 @@ import pantryRouter from "./routes/auto/pantry.routes.js";
 const app = express();
 
 // 2. MIDDLEWARE JSON (Vital pour que les POST marchent)
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); 
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(cors());
 
-connectToDb();
+// connectToDb(); (mis en commentaire pour l'instant car inutile)
 
 // 3. BRANCHEMENT MANUEL DES ROUTES
 app.use("/auth", authRouter);
