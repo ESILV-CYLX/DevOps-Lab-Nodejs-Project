@@ -1,18 +1,27 @@
 import express from "express";
-import {getUserById, getAllUsers, updateUser, updatePassword} from "../../controllers/users.controller.js";
+// Import the new functions here
+import { 
+    getUserById, 
+    getAllUsers, 
+    updateUser, 
+    updatePassword,
+    toggleFavorite, // <--- NEW
+    getFavorites    // <--- NEW
+} from "../../controllers/users.controller.js";
 
 import authenticateToken from "../../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-/**
- * /users           → GET    (public list)
- * /users/:id       → GET    (public profile)
- * /users/:id       → PUT    (only own account)
- * /users/:id/pass  → PUT    (change password - own account)
- */
-
+// 1. Static/Specific Routes MUST come first
 router.get("/", getAllUsers);
+
+// --- MOVED UP ---
+router.get("/me/favorites", authenticateToken, getFavorites);
+router.post("/me/favorites", authenticateToken, toggleFavorite);
+// ----------------
+
+// 2. Dynamic Routes (/:id) catch everything else, so they go LAST
 router.get("/:id", getUserById);
 router.put("/:id", authenticateToken, updateUser);
 router.put("/:id/password", authenticateToken, updatePassword);

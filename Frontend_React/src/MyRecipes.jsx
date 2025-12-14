@@ -31,7 +31,7 @@ export default function MyRecipes() {
 
   return (
     <div className="dashboard-container">
-        <h1 style={{marginBottom: '30px'}}>My Recipes 👨‍🍳</h1>
+        <h1 style={{marginBottom: '30px'}}>My Recipes</h1>
         
         {loading && <p>Loading...</p>}
         

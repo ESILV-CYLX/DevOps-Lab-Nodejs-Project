@@ -4,7 +4,7 @@ import React from 'react';
 export default function SettingsPage() {
   return (
     <div>
-      <h1>Paramètres ⚙️</h1>
+      <h1>Settings</h1>
       <div style={{ background: 'white', padding: '30px', borderRadius: '12px', marginTop: '20px' }}>
         
         <h3>Préférences Alimentaires</h3>

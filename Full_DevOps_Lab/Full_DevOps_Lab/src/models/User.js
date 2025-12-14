@@ -7,7 +7,10 @@ const userSchema = new mongoose.Schema({
     email:    { type: String, required: true, unique: true},
     password: { type: String, required: true},
     dietaryPreferences: { type: [String], default: []},
-    servingSize: { type: Number, default: 1}
+    servingSize: { type: Number, default: 1},
+    
+    // NEW: Array to store the IDs of liked recipes
+    savedRecipes: [{ type: Number, ref: 'Recipe' }]
 });
 
 //ESM export

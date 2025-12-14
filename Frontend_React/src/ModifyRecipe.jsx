@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { ArrowLeft, ChefHat, Plus, X, UploadCloud, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Trash2, Save, Plus, X, UploadCloud, AlertCircle } from 'lucide-react';
 
 // --- DATA: CATEGORIES & INGREDIENTS ---
 const INGREDIENT_DATA = {
@@ -19,19 +19,19 @@ const PREDEFINED_UNITS = [
   "g", "kg", "ml", "cl", "L", "tbsp", "tsp", "cup", "pcs", "pinch", "slice", "clove", "can"
 ];
 
-// Complete Cuisine List
 const CUISINE_TYPES = [
   "African", "American", "Asian", "British", "Chinese", "French", "German", 
   "Greek", "Indian", "Italian", "Japanese", "Korean", "Mediterranean", 
   "Mexican", "Middle Eastern", "Spanish", "Thai", "Other"
 ];
 
-export default function CreateRecipe() {
+export default function ModifyRecipe() {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   
+  const [loading, setLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState(null);
-  const [loading, setLoading] = useState(false);
   
   // Specific Error States
   const [ingredientError, setIngredientError] = useState('');
@@ -51,6 +51,55 @@ export default function CreateRecipe() {
     image: '' 
   });
 
+  // 1. Fetch Existing Data & Map Categories
+  useEffect(() => {
+    const fetchRecipe = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/recipes/${id}`, {
+             headers: { 
+                 'Authorization': `Bearer ${token}`,
+                 'Content-Type': 'application/json'
+             }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (user && data.userId !== user.userId) {
+             alert("You are not the owner of this recipe!");
+             navigate('/');
+             return;
+          }
+
+          // --- REVERSE LOOKUP: FIND CATEGORY FOR EACH INGREDIENT ---
+          // Because the DB doesn't store 'category', we must guess it so the UI works
+          const enrichedIngredients = (data.ingredients || []).map(ing => {
+             let foundCat = '';
+             for (const [cat, items] of Object.entries(INGREDIENT_DATA)) {
+                 if (items.includes(ing.name)) {
+                     foundCat = cat;
+                     break;
+                 }
+             }
+             return { ...ing, category: foundCat };
+          });
+          // ---------------------------------------------------------
+
+          setFormData({ ...data, ingredients: enrichedIngredients });
+          if (data.image) setImagePreview(data.image);
+        } else {
+            alert("Recipe not found or server error.");
+            navigate('/');
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (token && user) fetchRecipe();
+  }, [id, token, user, navigate]);
+
   // --- HANDLERS ---
 
   const handleChange = (e) => {
@@ -61,7 +110,7 @@ export default function CreateRecipe() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImageError(''); // Clear error
+      setImageError('');
       setImagePreview(URL.createObjectURL(file));
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -73,15 +122,12 @@ export default function CreateRecipe() {
 
   const handleIngredientChange = (index, field, value) => {
     const newIngredients = [...formData.ingredients];
-    
-    // Logic: If changing Category, reset the Name
     if (field === 'category') {
         newIngredients[index].category = value;
-        newIngredients[index].name = ''; // Reset ingredient name because category changed
+        newIngredients[index].name = ''; 
     } else {
         newIngredients[index][field] = value;
     }
-    
     setFormData({ ...formData, ingredients: newIngredients });
   };
 
@@ -104,39 +150,30 @@ export default function CreateRecipe() {
     setFormData({ ...formData, instructions: steps });
   };
 
-  // --- CREATE ACTION ---
+  // --- UPDATE ACTION ---
 
-  const handleCreate = async (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
-    
-    // 1. VALIDATION: Check Image
+
+    // VALIDATION
     if (!formData.image) {
         setImageError("Please upload a photo of your dish.");
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
     }
-
-    // 2. VALIDATION: Check Ingredients
     if (formData.ingredients.length === 0) {
         setIngredientError("Please add at least one ingredient.");
-        const element = document.getElementById('ingredients-section');
-        if (element) element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('ingredients-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
     }
-    
-    // Check for empty fields
     for (let ing of formData.ingredients) {
         if (!ing.name || !ing.quantity || !ing.category) {
-             setIngredientError("Please complete all ingredient fields (Category, Name, Quantity).");
-             const element = document.getElementById('ingredients-section');
-             if (element) element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+             setIngredientError("Please complete all ingredient fields.");
+             document.getElementById('ingredients-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
              return;
         }
     }
-
-    setLoading(true);
-
-    // 3. Prepare Payload
+    
     const payload = {
         ...formData,
         prepTime: parseInt(formData.prepTime) || 0,
@@ -151,9 +188,13 @@ export default function CreateRecipe() {
         }))
     };
 
+    delete payload._id;
+    delete payload.userId;
+    delete payload.recipeId;
+
     try {
-      const res = await fetch('http://localhost:3000/recipes', {
-        method: 'POST',
+      const res = await fetch(`http://localhost:3000/recipes/${id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -162,21 +203,38 @@ export default function CreateRecipe() {
       });
 
       if (res.ok) {
-        alert("Recipe published successfully! 🎉");
-        navigate('/'); 
+        alert("Recipe updated!");
+        navigate(`/recipe/${id}`);
       } else {
         const errData = await res.json();
-        alert(`Failed to create: ${errData.message}`);
+        alert(`Failed to update: ${errData.message}`);
+      }
+    } catch (err) {
+      alert("Error updating recipe");
+    }
+  };
+  
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this recipe?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:3000/recipes/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        navigate('/'); 
+        window.location.reload(); 
+      } else {
+        alert("Failed to delete");
       }
     } catch (err) {
       console.error(err);
-      alert("Error creating recipe.");
-    } finally {
-        setLoading(false);
     }
   };
 
-  if (loading) return <div style={{padding:'40px', textAlign:'center'}}>Publishing...</div>;
+  if (loading) return <div style={{padding:'40px'}}>Loading...</div>;
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -184,11 +242,11 @@ export default function CreateRecipe() {
         <ArrowLeft size={20} /> Cancel
       </button>
 
-      <h1 style={{fontSize: '2rem', marginBottom: '30px', textAlign: 'center'}}>Create a Recipe</h1>
+      <h1 style={{fontSize: '2rem', marginBottom: '30px', textAlign: 'center'}}>Modify Recipe</h1>
 
-      <form onSubmit={handleCreate} style={{ background: 'white', padding: '40px', borderRadius: '12px', boxShadow: '0 2px 15px rgba(0,0,0,0.05)' }}>
+      <form onSubmit={handleUpdate} style={{ background: 'white', padding: '40px', borderRadius: '12px', boxShadow: '0 2px 15px rgba(0,0,0,0.05)' }}>
         
-        {/* === IMAGE UPLOAD === */}
+        {/* IMAGE */}
         <div style={{marginBottom: '30px', textAlign: 'center', border: imageError ? '2px solid red' : 'none', borderRadius: '12px', padding: imageError ? '10px' : '0'}}>
            <label style={{fontWeight: 'bold', display:'block', marginBottom:'15px'}}>Dish Photo *</label>
            
@@ -259,14 +317,13 @@ export default function CreateRecipe() {
             </div>
         </div>
 
-        {/* --- INGREDIENTS SECTION (Cascading Selects) --- */}
+        {/* --- INGREDIENTS --- */}
         <div id="ingredients-section" style={{background: '#f8f9fa', padding: '25px', borderRadius: '12px', marginBottom: '30px', border: ingredientError ? '2px solid #ff4d4d' : '1px solid #eee'}}>
             <label style={{fontWeight: 'bold', display:'block', marginBottom:'20px', fontSize: '1.1rem'}}>Ingredients</label>
             
             {formData.ingredients.map((ing, index) => (
                 <div key={index} style={{display: 'flex', gap: '10px', marginBottom: '15px', alignItems: 'center', flexWrap: 'wrap'}}>
                     
-                    {/* 1. SELECT CATEGORY */}
                     <select 
                         value={ing.category} 
                         onChange={(e) => handleIngredientChange(index, 'category', e.target.value)}
@@ -279,13 +336,12 @@ export default function CreateRecipe() {
                         ))}
                     </select>
 
-                    {/* 2. SELECT INGREDIENT (Based on Category) */}
                     <select 
                         value={ing.name} 
                         onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
                         className="login-input" 
                         style={{flex: 3, minWidth: '150px', marginBottom: 0}}
-                        disabled={!ing.category} // Disable if no category picked
+                        disabled={!ing.category}
                     >
                         <option value="">Ingredient...</option>
                         {ing.category && INGREDIENT_DATA[ing.category].sort().map(item => (
@@ -293,7 +349,6 @@ export default function CreateRecipe() {
                         ))}
                     </select>
 
-                    {/* 3. QUANTITY */}
                     <input 
                         type="number"
                         placeholder="Qty" 
@@ -304,7 +359,6 @@ export default function CreateRecipe() {
                         min="0" step="0.1"
                     />
 
-                    {/* 4. UNIT */}
                     <select 
                         value={ing.unit} 
                         onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
@@ -333,7 +387,7 @@ export default function CreateRecipe() {
             )}
         </div>
 
-        {/* INSTRUCTIONS */}
+        {/* DESCRIPTION & INSTRUCTIONS */}
         <div style={{marginBottom: '25px'}}>
             <label style={{fontWeight: 'bold', display:'block', marginBottom:'8px'}}>Description (Optional)</label>
             <textarea name="description" value={formData.description} onChange={handleChange} className="login-input" rows={3} placeholder="Tell us a little bit about this dish..." style={{resize: 'vertical', fontFamily: 'inherit'}} />
@@ -344,10 +398,14 @@ export default function CreateRecipe() {
             <textarea value={formData.instructions.join('\n')} onChange={handleInstructionChange} className="login-input" rows={8} placeholder="Step 1:..." style={{resize: 'vertical', fontFamily: 'inherit', whiteSpace: 'pre-wrap'}} required />
         </div>
         
-        {/* BUTTON */}
-        <div style={{ marginTop: '30px', paddingTop: '30px', borderTop: '2px solid #f0f0f0' }}>
-            <button type="submit" className="btn-primary" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', fontSize: '1.2rem', padding: '15px' }}>
-                <ChefHat size={24} /> Publish Recipe
+        {/* BUTTONS */}
+        <div style={{ display: 'flex', gap: '20px', marginTop: '30px', paddingTop: '30px', borderTop: '2px solid #f0f0f0' }}>
+            <button type="submit" className="btn-primary" style={{ flex: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', fontSize: '1.1rem', padding: '15px' }}>
+                <Save size={20} /> Update Recipe
+            </button>
+
+            <button type="button" onClick={handleDelete} style={{ flex: 1, background: 'white', color: '#d32f2f', border: '2px solid #d32f2f', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', transition: 'all 0.2s' }} onMouseOver={(e) => { e.currentTarget.style.background = '#d32f2f'; e.currentTarget.style.color = 'white'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#d32f2f'; }}>
+                <Trash2 size={20} /> Delete
             </button>
         </div>
       </form>

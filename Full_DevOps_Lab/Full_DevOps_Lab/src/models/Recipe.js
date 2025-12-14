@@ -9,6 +9,8 @@ const recipeSchema = new mongoose.Schema({
     cookTime:    { type: Number, required: true }, // Changé de "String" à "Number"
     difficulty:  { type: Number, required: true },
     cuisineType: { type: String, required: true },
+    // NEW: Flavor
+    flavor:      { type: String, required: true, enum: ["Salty", "Sweet"] },
     servings:    { type: Number, required: true },
     tags:        { type: [String], default: [] },
     instructions:{ type: [String], default: [] },

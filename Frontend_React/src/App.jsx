@@ -10,10 +10,13 @@ import SettingsPage from './SettingsPage';
 import './App.css';
 import CreateRecipe from './CreateRecipe';
 import MyRecipes from './MyRecipes';
+import SavedRecipes from './SavedRecipes';
+import ModifyRecipe from './ModifyRecipe';
+import ShoppingList from './ShoppingList';
 
 const Sidebar = () => {
   const location = useLocation();
-  const { logout } = useAuth(); // On n'a plus besoin de 'user' ici
+  const { logout } = useAuth(); 
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -25,41 +28,38 @@ const Sidebar = () => {
 
   return (
     <nav className="sidebar">
-      {/* On a retiré le petit message "Bonjour" ici */}
-      <div className="brand">Smart Meal 🥦</div>
+      {/* 1. RENAMED */}
+      <div className="brand">Smart Meal Planner</div>
       
       <div className="menu-group">
-        <div className="menu-title">Découvrir</div>
+        <div className="menu-title">Discover</div>
         <Link to="/" className={`nav-link ${isActive('/')}`}>
-          <Home size={20} /> Accueil
+          <Home size={20} /> Home
         </Link>
-        <Link to="/browse" className={`nav-link ${isActive('/browse')}`}>
-          <Search size={20} /> Explorer
-        </Link>
-        <Link to="/top" className={`nav-link ${isActive('/top')}`}>
-          <Heart size={20} /> Top Recettes
+        <Link to="/saved" className={`nav-link ${isActive('/saved')}`}>
+          <Heart size={20} /> Saved Recipes
         </Link>
       </div>
 
       <div className="menu-group">
-        <div className="menu-title">Ton Espace</div>
+        <div className="menu-title">Your Space</div>
         <Link to="/list" className={`nav-link ${isActive('/list')}`}>
-          <List size={20} /> Liste de courses
+          <List size={20} /> Shopping List
         </Link>
         <Link to="/my-recipes" className={`nav-link ${isActive('/my-recipes')}`}>
-          <ChefHat size={20} /> Mes Recettes
+          <ChefHat size={20} /> My Recipes
         </Link>
         <Link to="/planner" className={`nav-link ${isActive('/planner')}`}>
-          <Calendar size={20} /> Calendrier
+          <Calendar size={20} /> Calendar
         </Link>
       </div>
       
       <div style={{marginTop: 'auto'}}>
         <Link to="/settings" className={`nav-link ${isActive('/settings')}`}>
-            <Settings size={20} /> Paramètres
+            <Settings size={20} /> Settings
         </Link>
         <div onClick={handleLogout} className="nav-link" style={{cursor: 'pointer', color: '#d9534f'}}>
-            <LogOut size={20} /> Déconnexion
+            <LogOut size={20} /> Logout
         </div>
       </div>
     </nav>
@@ -90,17 +90,40 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/recipe/:id" element={<Layout><RecipeDetail /></Layout>} />
-          <Route path="/settings" element={<Layout><SettingsPage /></Layout>} />
-
-          <Route path="/create-recipe" element={<Layout><CreateRecipe /></Layout>} />
           
-          <Route path="/my-recipes" element={<Layout><MyRecipes /></Layout>} />
-          <Route path="/list" element={<Layout><h2>Liste de courses (À venir)</h2></Layout>} />
-          <Route path="/planner" element={<Layout><h2>Calendrier (À venir)</h2></Layout>} />
-          <Route path="/browse" element={<Layout><h2>Explorer (À venir)</h2></Layout>} />
-          <Route path="/top" element={<Layout><h2>Top Recettes (À venir)</h2></Layout>} />
+          {/* Dashboard manages its own scroll, so NO wrapper needed here */}
+          <Route path="/" element={<Layout><Dashboard /></Layout>} />
+
+          {/* WRAP OTHER PAGES so they scroll and have padding */}
+          <Route path="/recipe/:id" element={
+            <Layout><div className="scrollable-page"><RecipeDetail /></div></Layout>
+          } />
+          
+          <Route path="/settings" element={
+            <Layout><div className="scrollable-page"><SettingsPage /></div></Layout>
+          } />
+
+          <Route path="/create-recipe" element={
+            <Layout><div className="scrollable-page"><CreateRecipe /></div></Layout>
+          } />
+
+          <Route path="/modify-recipe/:id" element={
+            <Layout><div className="scrollable-page"><ModifyRecipe /></div></Layout>
+          } />
+          
+          <Route path="/my-recipes" element={
+            <Layout><div className="scrollable-page"><MyRecipes /></div></Layout>
+          } />
+
+          <Route path="/saved" element={
+            <Layout><div className="scrollable-page"><SavedRecipes /></div></Layout>
+          } />
+
+          <Route path="/list" element={
+            <Layout><div className="scrollable-page"><ShoppingList /></div></Layout>
+          } />
+          
+          <Route path="/planner" element={<Layout><div className="scrollable-page"><h2>Calendar (Coming Soon)</h2></div></Layout>} />
         </Routes>
       </Router>
     </AuthProvider>

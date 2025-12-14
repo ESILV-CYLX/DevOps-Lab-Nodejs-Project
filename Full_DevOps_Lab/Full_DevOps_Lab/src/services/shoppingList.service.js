@@ -1,60 +1,11 @@
 import ShoppingList from '../models/ShoppingList.js';
-import MealPlan from '../models/MealPlan.js';
 
 export const getListByUserId = async (userId) => {
   return await ShoppingList.findOne({ userId: userId });
 };
 
-export const generateListFromPlanner = async (userId, mealPlanId) => {
-  
-  const mealPlan = await MealPlan.findById(mealPlanId);
-
-  if (!mealPlan) {
-    throw new Error("Meal Plan introuvable");
-  }
-
-  const itemsMap = {}; 
-
-  if (mealPlan.recipes && mealPlan.recipes.length > 0) {
-    mealPlan.recipes.forEach(recipe => {
-      if (recipe.ingredients) {
-        recipe.ingredients.forEach(ing => {
-          const key = ing.name.trim().toLowerCase();
-
-          if (itemsMap[key]) {
-            itemsMap[key].quantity += ing.quantity;
-          } else {
-            itemsMap[key] = {
-              name: ing.name,
-              quantity: ing.quantity,
-              unit: ing.unit,
-              category: ing.category || "Divers",
-              checked: false
-            };
-          }
-        });
-      }
-    });
-  }
-
-  const newShoppingItems = Object.values(itemsMap);
-  let shoppingList = await ShoppingList.findOne({ userId: userId });
-
-  if (shoppingList) {
-    shoppingList.items = newShoppingItems;
-    shoppingList.updatedAt = new Date();
-    await shoppingList.save();
-  } else {
-    shoppingList = await ShoppingList.create({
-      userId: userId,
-      items: newShoppingItems
-    });
-  }
-
-  return shoppingList;
-};
-
-export const addItem = async (userId, itemData) => {
+// --- ROBUST ADD ITEM (With Auto-Cleaning) ---
+export const addItem = async (userId, newItem) => {
   let list = await ShoppingList.findOne({ userId });
   
   if (!list) {
@@ -63,18 +14,46 @@ export const addItem = async (userId, itemData) => {
       items: [], 
       updatedAt: new Date() 
     });
+  } else {
+    // === SANITIZATION STEP ===
+    // Filter out any item that is "corrupted" (missing a name) from old tests
+    const originalLength = list.items.length;
+    list.items = list.items.filter(item => item && item.name);
+    
+    if (list.items.length !== originalLength) {
+        console.log(`[Auto-Clean] Removed ${originalLength - list.items.length} corrupted items for user ${userId}`);
+    }
   }
 
-  list.items.push(itemData);
+  // Now it is safe to loop because we know all items have names
+  const existingItemIndex = list.items.findIndex(item => 
+    item.name.toLowerCase() === newItem.name.toLowerCase() && 
+    item.unit === newItem.unit
+  );
+
+  if (existingItemIndex > -1) {
+    // UPDATE: Sum the quantity
+    list.items[existingItemIndex].quantity += parseFloat(newItem.quantity);
+  } else {
+    // INSERT: Push new item
+    list.items.push({
+        name: newItem.name,
+        quantity: parseFloat(newItem.quantity),
+        unit: newItem.unit,
+        category: newItem.category || "Divers",
+        checked: false
+    });
+  }
+
   return await list.save();
 };
 
 export const updateItem = async (userId, itemId, updateData) => {
   const list = await ShoppingList.findOne({ userId });
-  if (!list) throw new Error("Liste introuvable");
+  if (!list) throw new Error("List not found");
 
   const item = list.items.id(itemId);
-  if (!item) throw new Error("Item introuvable");
+  if (!item) throw new Error("Item not found");
 
   if (updateData.checked !== undefined) item.checked = updateData.checked;
   if (updateData.quantity) item.quantity = updateData.quantity;
@@ -85,7 +64,7 @@ export const updateItem = async (userId, itemId, updateData) => {
 
 export const deleteItem = async (userId, itemId) => {
   const list = await ShoppingList.findOne({ userId });
-  if (!list) throw new Error("Liste introuvable");
+  if (!list) throw new Error("List not found");
 
   list.items.pull(itemId);
   return await list.save();
@@ -93,7 +72,6 @@ export const deleteItem = async (userId, itemId) => {
 
 export default {
   getListByUserId,
-  generateListFromPlanner,
   addItem,
   updateItem,
   deleteItem
