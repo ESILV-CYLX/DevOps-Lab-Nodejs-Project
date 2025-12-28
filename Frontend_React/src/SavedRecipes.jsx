@@ -1,74 +1,121 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { Heart } from 'lucide-react';
+import { Clock, Heart } from 'lucide-react';
 
 export default function SavedRecipes() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch the saved recipes (full objects) from the backend
   useEffect(() => {
-    const fetchSaved = async () => {
+    const fetchFavorites = async () => {
       try {
-        const response = await fetch('http://localhost:3000/users/me/favorites', {
+        const res = await fetch('http://localhost:3000/users/me/favorites', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (response.ok) {
-            const data = await response.json();
-            setRecipes(data);
+        if (res.ok) {
+          const data = await res.json();
+          setRecipes(data);
         }
       } catch (err) {
-        console.error("Error fetching saved recipes:", err);
+        console.error("Error fetching favorites:", err);
       } finally {
         setLoading(false);
       }
     };
-
-    if (token) fetchSaved();
+    if (token) fetchFavorites();
   }, [token]);
 
-  // Helper for difficulty text
-  const getDifficultyText = (level) => {
-    switch(level) {
-      case 1: return "Easy";
-      case 2: return "Medium";
-      case 3: return "Hard";
-      default: return "Medium";
+  const removeFavorite = async (e, recipeId) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Optimistic UI update
+    setRecipes(currentRecipes => currentRecipes.filter(r => r.recipeId !== recipeId));
+
+    try {
+        const res = await fetch('http://localhost:3000/users/me/favorites', {
+            method: 'POST', // Always use POST to toggle
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ recipeId })
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to remove favorite");
+        }
+    } catch (err) {
+        console.error(err);
     }
   };
 
-  if (loading) return <div style={{padding: '40px'}}>Loading your favorites...</div>;
+  if (loading) return <div style={{padding:'40px'}}>Loading saved recipes...</div>;
 
   return (
-    <div style={{ padding: '40px' }}>
-      <h1 style={{ marginBottom: '30px' }}>Saved Recipes</h1>
+    <div className="page-content">
+      <h1 style={{ marginBottom: '30px', fontSize: '2rem' }}>Saved Recipes</h1>
       
       {recipes.length === 0 ? (
-        <p>You haven't saved any recipes yet. Go explore!</p>
+        <div style={{textAlign: 'center', padding: '60px', color: '#888', background: 'white', borderRadius: '16px'}}>
+          <Heart size={48} style={{opacity: 0.2, marginBottom: '20px'}}/>
+          <p>You haven't saved any recipes yet. Go find some you love!</p>
+        </div>
       ) : (
-        <div className="recipe-grid">
-          {recipes.map((recipe) => (
-            <Link to={`/recipe/${recipe.recipeId}`} key={recipe.recipeId} style={{textDecoration: 'none', color: 'inherit'}}>
-              <div className="recipe-card">
-                 {/* Image */}
-                <div className="card-img" style={{
-                    backgroundImage: `url(${recipe.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=60'})`
-                }}></div>
-                
-                {/* Info */}
-                <div className="card-info">
-                    <span style={{color: '#888', fontSize: '12px', display: 'block'}}>
-                        {recipe.cuisineType}
-                    </span>
-                    <div className="card-title">{recipe.title}</div>
-                    <div className="card-meta">
-                        Difficulty: {getDifficultyText(recipe.difficulty)} • {recipe.prepTime} min
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '25px' }}>
+          {recipes.map(recipe => (
+            <div key={recipe.recipeId} style={{position: 'relative'}}>
+              <Link to={`/recipe/${recipe.recipeId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', transition: 'transform 0.2s', height: '100%' }}
+                     onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                     onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                  
+                  <div style={{ height: '180px', overflow: 'hidden', position: 'relative' }}>
+                    <img src={recipe.image} alt={recipe.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    
+                    {/* LIKE BUTTON (Always Red here) */}
+                    <button 
+                        onClick={(e) => removeFavorite(e, recipe.recipeId)}
+                        style={{
+                            position: 'absolute',
+                            top: '10px',
+                            right: '10px',
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '50%',
+                            background: 'white',
+                            border: 'none',
+                            outline: 'none',
+                            display: 'grid',
+                            placeItems: 'center',
+                            cursor: 'pointer',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                            padding: 0,
+                            zIndex: 10
+                        }}
+                    >
+                         <Heart 
+                            size={20} 
+                            color="#ff4d4d" 
+                            fill="#ff4d4d" 
+                            strokeWidth={2}
+                         />
+                    </button>
+                  </div>
+                  
+                  <div style={{ padding: '15px' }}>
+                    <div style={{fontSize: '0.8rem', color: '#888', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px'}}>{recipe.cuisineType}</div>
+                    <h3 style={{ margin: '0 0 10px 0', fontSize: '1.1rem', fontWeight: '600' }}>{recipe.title}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', color: '#666', fontSize: '0.9rem' }}>
+                      <Clock size={16} style={{ marginRight: '5px' }} />
+                      <span>{recipe.prepTime + recipe.cookTime} min</span>
                     </div>
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </div>
           ))}
         </div>
       )}

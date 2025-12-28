@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { ArrowLeft, ChefHat, Plus, X, UploadCloud, AlertCircle } from 'lucide-react';
 
-// --- DATA: CATEGORIES & INGREDIENTS ---
+// Temporarely left because databse not completed yet
 const INGREDIENT_DATA = {
   "Vegetables & Greens": ["Tomato", "Onion", "Garlic", "Potato", "Carrot", "Bell Pepper", "Spinach", "Lettuce", "Cucumber", "Avocado", "Mushrooms", "Zucchini", "Broccoli", "Cauliflower", "Corn", "Green Beans", "Ginger"],
   "Fruits": ["Apple", "Banana", "Lemon", "Lime", "Orange", "Strawberry", "Blueberry", "Pineapple", "Mango", "Grapes"],
@@ -51,7 +51,7 @@ export default function CreateRecipe() {
     image: '' 
   });
 
-  // --- HANDLERS ---
+  // HANDLERS
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -74,10 +74,10 @@ export default function CreateRecipe() {
   const handleIngredientChange = (index, field, value) => {
     const newIngredients = [...formData.ingredients];
     
-    // Logic: If changing Category, reset the Name
+    // If changing category, reset the name
     if (field === 'category') {
         newIngredients[index].category = value;
-        newIngredients[index].name = ''; // Reset ingredient name because category changed
+        newIngredients[index].name = '';
     } else {
         newIngredients[index][field] = value;
     }
@@ -104,19 +104,19 @@ export default function CreateRecipe() {
     setFormData({ ...formData, instructions: steps });
   };
 
-  // --- CREATE ACTION ---
+  // CREATE ACTION
 
   const handleCreate = async (e) => {
     e.preventDefault();
     
-    // 1. VALIDATION: Check Image
+    // Check image
     if (!formData.image) {
         setImageError("Please upload a photo of your dish.");
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
     }
 
-    // 2. VALIDATION: Check Ingredients
+    // Check ingredients
     if (formData.ingredients.length === 0) {
         setIngredientError("Please add at least one ingredient.");
         const element = document.getElementById('ingredients-section');
@@ -136,7 +136,7 @@ export default function CreateRecipe() {
 
     setLoading(true);
 
-    // 3. Prepare Payload
+    // Prepare payload
     const payload = {
         ...formData,
         prepTime: parseInt(formData.prepTime) || 0,
@@ -188,7 +188,7 @@ export default function CreateRecipe() {
 
       <form onSubmit={handleCreate} style={{ background: 'white', padding: '40px', borderRadius: '12px', boxShadow: '0 2px 15px rgba(0,0,0,0.05)' }}>
         
-        {/* === IMAGE UPLOAD === */}
+        {/* IMAGE UPLOAD */}
         <div style={{marginBottom: '30px', textAlign: 'center', border: imageError ? '2px solid red' : 'none', borderRadius: '12px', padding: imageError ? '10px' : '0'}}>
            <label style={{fontWeight: 'bold', display:'block', marginBottom:'15px'}}>Dish Photo *</label>
            
@@ -259,7 +259,7 @@ export default function CreateRecipe() {
             </div>
         </div>
 
-        {/* --- INGREDIENTS SECTION (Cascading Selects) --- */}
+        {/* INGREDIENTS SECTION */}
         <div id="ingredients-section" style={{background: '#f8f9fa', padding: '25px', borderRadius: '12px', marginBottom: '30px', border: ingredientError ? '2px solid #ff4d4d' : '1px solid #eee'}}>
             <label style={{fontWeight: 'bold', display:'block', marginBottom:'20px', fontSize: '1.1rem'}}>Ingredients</label>
             

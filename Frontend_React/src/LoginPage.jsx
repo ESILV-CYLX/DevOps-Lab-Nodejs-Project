@@ -7,7 +7,7 @@ export default function LoginPage() {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [formData, setFormData] = useState({
     username: '', 
-    email: '', // <--- NOUVEAU : Champ Email ajouté
+    email: '',
     password: ''
   });
   const [message, setMessage] = useState('');
@@ -64,7 +64,7 @@ export default function LoginPage() {
   return (
     <div className="login-page-container">
       <div className="login-card">
-        <h1 style={{margin: '0 0 10px 0'}}>Smart Meal 🥦</h1>
+        <h1 style={{margin: '0 0 10px 0'}}>Smart Meal</h1>
         <p style={{marginBottom: '20px', color: '#666'}}>
           {isLoginMode ? 'Connectez-vous à votre espace' : 'Rejoignez la communauté'}
         </p>

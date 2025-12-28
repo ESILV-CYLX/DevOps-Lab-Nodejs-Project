@@ -5,19 +5,19 @@
   --sidebar-width: 250px;
 }
 
-/* 1. GLOBAL RESET - Prevents the whole window from scrolling */
+/* Prevents the whole window from scrolling */
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
   width: 100%;
-  overflow: hidden; /* CRITICAL: Kills the browser's default scrollbar */
+  overflow: hidden; /* Kills the browser's default scrollbar */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: var(--bg-color);
   color: #333;
 }
 
-/* 2. MAIN LAYOUT - Holds Sidebar + Content side-by-side */
+/* Holds Sidebar + Content side-by-side */
 .app-container {
   display: flex;
   height: 100vh; /* Force full viewport height */
@@ -25,7 +25,6 @@ html, body {
   overflow: hidden;
 }
 
-/* 3. SIDEBAR - Fixed width, never moves */
 .sidebar {
   width: var(--sidebar-width);
   background: white;
@@ -78,7 +77,6 @@ html, body {
   margin-right: 10px;
 }
 
-/* 4. CONTENT FRAME - The box to the right of Sidebar */
 .main-content {
   flex: 1; /* Take all remaining width */
   height: 100vh;
@@ -88,25 +86,20 @@ html, body {
   position: relative;
 }
 
-/* 5. DASHBOARD CONTAINER - The only part that scrolls Vertically */
 .dashboard-container {
   flex: 1;
   height: 100%;
   overflow-y: auto;  /* Vertical scrolling enabled */
-  overflow-x: hidden; /* NO horizontal scrolling for the page itself */
+  overflow-x: hidden; /* No horizontal scrolling for the page itself */
   padding: 30px 60px; /* Adjusted padding */
   box-sizing: border-box;
-  
-  /* CRITICAL FIX for Flexbox expanding issue */
   min-width: 0; 
   width: 100%;
 }
 
-/* 6. NETFLIX ROWS - Invisible Scrollbar */
 .horizontal-scroll {
   display: flex;
   gap: 25px;
-  
   overflow-x: auto;   /* Enable horizontal scroll */
   width: 100%;        
   padding-bottom: 20px;
@@ -124,7 +117,6 @@ html, body {
   display: none;
 }
 
-/* 7. COMPONENT STYLES (Cards, Buttons, etc.) */
 .header-section {
   display: flex;
   justify-content: space-between;
@@ -263,7 +255,6 @@ html, body {
   box-sizing: border-box; 
 }
 
-/* GENERIC PAGE WRAPPER (For Settings, Create Recipe, Details, Saved) */
 .scrollable-page {
   height: 100%;        /* Fill the main-content frame */
   overflow-y: auto;    /* Enable vertical scrolling */
@@ -272,7 +263,6 @@ html, body {
   width: 100%;
 }
 
-/* Optional: Limit width of text-heavy pages like Settings for better readability */
 .page-content-limited {
   max-width: 800px;
 }

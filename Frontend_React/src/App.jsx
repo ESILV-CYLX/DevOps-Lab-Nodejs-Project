@@ -13,6 +13,7 @@ import MyRecipes from './MyRecipes';
 import SavedRecipes from './SavedRecipes';
 import ModifyRecipe from './ModifyRecipe';
 import ShoppingList from './ShoppingList';
+import AddIngredient from './AddIngredient';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -28,7 +29,6 @@ const Sidebar = () => {
 
   return (
     <nav className="sidebar">
-      {/* 1. RENAMED */}
       <div className="brand">Smart Meal Planner</div>
       
       <div className="menu-group">
@@ -66,7 +66,6 @@ const Sidebar = () => {
   );
 };
 
-// Le reste du fichier (Layout, App...) ne change pas, mais je le remets pour que tu puisses tout copier d'un coup
 const Layout = ({ children }) => {
   const { user, token } = useAuth();
   
@@ -91,10 +90,10 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           
-          {/* Dashboard manages its own scroll, so NO wrapper needed here */}
+          {/* Dashboard manages its own scroll, so no wrapper needed here */}
           <Route path="/" element={<Layout><Dashboard /></Layout>} />
 
-          {/* WRAP OTHER PAGES so they scroll and have padding */}
+          {/* Wrap other pages so they scroll and have padding */}
           <Route path="/recipe/:id" element={
             <Layout><div className="scrollable-page"><RecipeDetail /></div></Layout>
           } />
@@ -121,6 +120,10 @@ function App() {
 
           <Route path="/list" element={
             <Layout><div className="scrollable-page"><ShoppingList /></div></Layout>
+          } />
+
+          <Route path="/add-ingredient" element={
+              <Layout><div className="page-content"><AddIngredient /></div></Layout>
           } />
           
           <Route path="/planner" element={<Layout><div className="scrollable-page"><h2>Calendar (Coming Soon)</h2></div></Layout>} />
