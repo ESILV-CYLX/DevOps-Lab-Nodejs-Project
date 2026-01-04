@@ -1,0 +1,268 @@
+/* src/App.css */
+:root {
+  --primary-color: #000;
+  --bg-color: #f5f5f5;
+  --sidebar-width: 250px;
+}
+
+/* Prevents the whole window from scrolling */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Kills the browser's default scrollbar */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color);
+  color: #333;
+}
+
+/* Holds Sidebar + Content side-by-side */
+.app-container {
+  display: flex;
+  height: 100vh; /* Force full viewport height */
+  width: 100vw;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: white;
+  padding: 20px;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+  flex-shrink: 0; /* Prevents sidebar from being squashed */
+  z-index: 100;
+}
+
+.brand {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.menu-group {
+  margin-bottom: 20px;
+}
+
+.menu-title {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  text-decoration: none;
+  color: #555;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  transition: background 0.2s;
+}
+
+.nav-link:hover, .nav-link.active {
+  background-color: #f0f0f0;
+  color: black;
+  font-weight: 500;
+}
+
+.nav-link svg {
+  margin-right: 10px;
+}
+
+.main-content {
+  flex: 1; /* Take all remaining width */
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* This acts as a wall: nothing inside can stretch the window */
+  position: relative;
+}
+
+.dashboard-container {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;  /* Vertical scrolling enabled */
+  overflow-x: hidden; /* No horizontal scrolling for the page itself */
+  padding: 30px 60px; /* Adjusted padding */
+  box-sizing: border-box;
+  min-width: 0; 
+  width: 100%;
+}
+
+.horizontal-scroll {
+  display: flex;
+  gap: 25px;
+  overflow-x: auto;   /* Enable horizontal scroll */
+  width: 100%;        
+  padding-bottom: 20px;
+  padding-left: 5px;
+  scroll-behavior: smooth;
+  
+  /* Hides scrollbar for Firefox */
+  scrollbar-width: none; 
+  /* Hides scrollbar for IE, Edge */
+  -ms-overflow-style: none; 
+}
+
+/* Hides scrollbar for Chrome, Safari, Opera */
+.horizontal-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: black;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  white-space: nowrap; /* Prevents text from wrapping */
+}
+
+.section-title {
+  margin-top: 50px;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+}
+
+.recipe-card {
+  width: 260px; /* Fixed width */
+  min-width: 260px;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: transform 0.2s;
+  border: 1px solid transparent;
+}
+
+.recipe-card:hover {
+  transform: translateY(-5px);
+  border-color: #eee;
+}
+
+.card-img {
+  height: 160px;
+  background-color: #ddd;
+  background-size: cover;
+  background-position: center;
+}
+
+.card-info {
+  padding: 15px;
+}
+
+.card-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 1.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-meta {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Planning Widget */
+.planning-grid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.day-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  flex: 1;
+  min-width: 160px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+}
+
+.day-header {
+  font-weight: bold;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.meal-slot {
+  font-size: 0.95rem;
+  margin-top: 8px;
+  color: #555;
+}
+
+/* Grid Layout for "My Recipes" Page */
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+  gap: 25px;
+  padding-bottom: 20px;
+}
+
+/* Login Page Centering */
+.login-page-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  z-index: 1000;
+}
+
+.login-card {
+  background: white; 
+  padding: 40px; 
+  border-radius: 12px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+  text-align: center; 
+  width: 350px;
+}
+
+.login-input {
+  width: 100%; 
+  padding: 12px; 
+  margin-bottom: 15px; 
+  border-radius: 6px; 
+  border: 1px solid #ccc;
+  box-sizing: border-box; 
+}
+
+.scrollable-page {
+  height: 100%;        /* Fill the main-content frame */
+  overflow-y: auto;    /* Enable vertical scrolling */
+  padding: 40px;       /* proper spacing from edges */
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.page-content-limited {
+  max-width: 800px;
+}
