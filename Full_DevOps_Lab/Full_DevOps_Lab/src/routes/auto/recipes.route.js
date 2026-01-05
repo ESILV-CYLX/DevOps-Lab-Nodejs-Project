@@ -5,11 +5,10 @@ import authenticateToken from "../../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-// Toutes les routes sont protégées par JWT
-router.use(authenticateToken);
-
+// GET routes are public, others protected
 router.get("/", getRecipes);
 router.get("/:id", getRecipeById);
+router.use(authenticateToken);
 router.post("/", createRecipe);
 router.put("/:id", updateRecipe);
 router.delete("/:id", deleteRecipe);

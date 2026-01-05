@@ -4,35 +4,36 @@ import { useAuth } from './AuthContext';
 import { Heart, Clock, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // --- INTERNAL COMPONENT: RECIPE CARD ---
-const RecipeCard = ({ recipe, isLikedInitial }) => {
+const RecipeCard = ({ recipe, likedRecipeIds, onToggleLike }) => {
   const { token, user } = useAuth();
-  const [isLiked, setIsLiked] = useState(isLikedInitial);
-
-  useEffect(() => { setIsLiked(isLikedInitial); }, [isLikedInitial]);
+  const isLiked = likedRecipeIds.has(recipe.recipeId);
 
   const toggleLike = async (e) => {
     e.preventDefault(); 
     e.stopPropagation();
-    
     if (!user) return; 
 
-    const previousState = isLiked;
-    setIsLiked(!previousState); 
+    const newLiked = !isLiked;
+    onToggleLike?.(recipe.recipeId, newLiked);
 
     try {
-      const method = !previousState ? 'POST' : 'DELETE';
-      const res = await fetch(`http://localhost:3000/users/me/favorites`, {
-        method: 'POST',
+      const url = newLiked 
+        ? `http://localhost:3000/users/me/favorites` 
+        : `http://localhost:3000/users/me/favorites/${recipe.recipeId}`;
+      const method = newLiked ? 'POST' : 'DELETE';
+      const res = await fetch(url, {
+        method,
         headers: { 
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}` 
         },
-        body: JSON.stringify({ recipeId: recipe.recipeId })
+        body: newLiked ? JSON.stringify({ recipeId: recipe.recipeId }) : null
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error("Failed to toggle favorite");
+
     } catch (err) {
-      setIsLiked(previousState); 
       console.error(err);
+      onToggleLike?.(recipe.recipeId, isLiked); // rollback si erreur
     }
   };
 
@@ -148,9 +149,11 @@ export default function Dashboard() {
         if (recipesRes.ok) {
             const recipesData = await recipesRes.json();
             if (Array.isArray(recipesData)) {
-                setRecipes(recipesData);
+               setRecipes(recipesData);
+            } else if (Array.isArray(recipesData.recipes)) {
+               setRecipes(recipesData.recipes);
             } else {
-                setRecipes([]);
+               setRecipes([]);
             }
         }
 
@@ -214,7 +217,8 @@ export default function Dashboard() {
 
       {dashboardSections.map(section => {
         const sectionRecipes = recipes.filter(r => {
-          const matchesSection = section.filter(r);
+          if (!r || !r.title) return false;
+          const matchesSection = r.cuisineType ? section.filter(r) : false;
           const matchesSearch = r.title.toLowerCase().includes(searchTerm.toLowerCase());
           return matchesSection && matchesSearch;
         });
@@ -227,7 +231,15 @@ export default function Dashboard() {
               <RecipeCard 
                 key={recipe.recipeId} 
                 recipe={recipe} 
-                isLikedInitial={likedRecipeIds.has(recipe.recipeId)}
+                likedRecipeIds={likedRecipeIds}
+                onToggleLike={(recipeId, liked) => {
+                  setLikedRecipeIds(prev => {
+                    const newSet = new Set(prev);
+                    if (liked) newSet.add(recipeId);
+                    else newSet.delete(recipeId);
+                    return newSet;
+                  });
+                }}
               />
             ))}
           </DashboardSection>

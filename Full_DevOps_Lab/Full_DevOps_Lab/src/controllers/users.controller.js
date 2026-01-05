@@ -1,6 +1,6 @@
 import * as userService from "../services/users.service.js";
 import User from "../models/User.js";
-import Recipe from "../models/Recipe.js"; // Needed to find the actual recipe details
+import Recipe from "../models/Recipe.js";
 
 export const getAllUsers = (req, res) => {
     const users = userService.getAllUsers();
@@ -34,31 +34,37 @@ export const updatePassword = async (req, res) => {
     }
 };
 
-// --- NEW: Favorites Logic (CORRECTED) ---
-
 export const toggleFavorite = async (req, res) => {
   try {
-    // FIX: Use req.userId (matches your other functions) instead of req.user.userId
     const userId = req.userId; 
-    const recipeId = parseInt(req.body.recipeId);
+    const recipeId = parseInt(req.params.recipeId || req.body.recipeId);
 
-    // console.log("Toggling favorite for User:", userId, "Recipe:", recipeId); // Uncomment to debug
+    if (isNaN(recipeId)) {
+      return res.status(400).json({ message: "Invalid Recipe ID" });
+    }
 
     const user = await User.findOne({ userId });
     if (!user) return res.status(404).json({ message: "User not found" });
-
-    // Initialize if missing
     if (!user.savedRecipes) user.savedRecipes = [];
 
     const index = user.savedRecipes.indexOf(recipeId);
     let isFavorite = false;
 
-    if (index === -1) {
-      user.savedRecipes.push(recipeId);
-      isFavorite = true;
-    } else {
-      user.savedRecipes.splice(index, 1);
+    if (req.method === "DELETE") {
+      if (index !== -1) {
+        user.savedRecipes.splice(index, 1);
+      }
       isFavorite = false;
+    } else {
+      // Cas du POST
+      if (index === -1) {
+        user.savedRecipes.push(recipeId);
+        isFavorite = true;
+      } else {
+        // Optionnel
+        user.savedRecipes.splice(index, 1);
+        isFavorite = false;
+      }
     }
 
     await user.save();

@@ -22,6 +22,8 @@ export default function AddIngredient() {
     e.preventDefault();
     setLoading(true);
 
+    console.log("Token:", token);
+
     try {
       const res = await fetch('http://localhost:3000/ingredients', { // Pour matcher ingredients.route.js
         method: 'POST',

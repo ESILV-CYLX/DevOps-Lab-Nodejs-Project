@@ -3,6 +3,9 @@
  * We keep the HTTP listener separate from the Express app instance so
  * tests can import `app` without opening a real port.
  */
+import dotenv from 'dotenv';
+dotenv.config();
+
 import app from "./app.js";
 import { connectToDb } from "./db/mongo.js";
 

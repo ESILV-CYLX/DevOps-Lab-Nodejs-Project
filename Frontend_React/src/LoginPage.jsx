@@ -44,6 +44,7 @@ export default function LoginPage() {
           // On passe l'objet User complet ET le Token
           // Le backend renvoie { message, token, user }
           const userData = data.user || { name: formData.username }; // Fallback si user vide
+          console.log("Login successful, token:", data.token);
           login(userData, data.token); 
           navigate('/');
         } else {

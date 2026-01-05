@@ -1,19 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { ArrowLeft, ChefHat, Plus, X, UploadCloud, AlertCircle } from 'lucide-react';
-
-// Temporarely left because databse not completed yet
-const INGREDIENT_DATA = {
-  "Vegetables & Greens": ["Tomato", "Onion", "Garlic", "Potato", "Carrot", "Bell Pepper", "Spinach", "Lettuce", "Cucumber", "Avocado", "Mushrooms", "Zucchini", "Broccoli", "Cauliflower", "Corn", "Green Beans", "Ginger"],
-  "Fruits": ["Apple", "Banana", "Lemon", "Lime", "Orange", "Strawberry", "Blueberry", "Pineapple", "Mango", "Grapes"],
-  "Meat & Poultry": ["Chicken Breast", "Chicken Thighs", "Ground Beef", "Steak", "Bacon", "Pork Chop", "Turkey", "Lamb", "Sausage", "Ham"],
-  "Seafood": ["Salmon", "Tuna", "Shrimp", "Cod", "Crab", "Lobster", "Mussels", "Scallops"],
-  "Dairy & Eggs": ["Butter", "Eggs", "Milk", "Cheese", "Cheddar", "Mozzarella", "Parmesan", "Yogurt", "Cream", "Sour Cream"],
-  "Grains & Bread": ["Rice", "Pasta", "Spaghetti", "Noodles", "Bread", "Tortilla", "Quinoa", "Oats", "Flour", "Breadcrumbs"],
-  "Pantry & Spices": ["Sugar", "Salt", "Olive Oil", "Vegetable Oil", "Soy Sauce", "Vinegar", "Honey", "Mustard", "Mayonnaise", "Ketchup", "Tomato Sauce", "Broth", "Black Pepper", "Chili Powder", "Cinnamon", "Vanilla Extract", "Baking Powder", "Cumin", "Paprika", "Turmeric"],
-  "Herbs": ["Basil", "Oregano", "Parsley", "Thyme", "Cilantro", "Rosemary", "Mint", "Dill", "Chives"]
-};
 
 const PREDEFINED_UNITS = [
   "g", "kg", "ml", "cl", "L", "tbsp", "tsp", "cup", "pcs", "pinch", "slice", "clove", "can"
@@ -26,6 +14,8 @@ const CUISINE_TYPES = [
   "Mexican", "Middle Eastern", "Spanish", "Thai", "Other"
 ];
 
+const FLAVORS = ["Salty", "Sweet", "Savory", "Spicy", "Mild", "Sweet & Sour", "Umami", "Bitter"];
+
 export default function CreateRecipe() {
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -37,12 +27,15 @@ export default function CreateRecipe() {
   const [ingredientError, setIngredientError] = useState('');
   const [imageError, setImageError] = useState('');
 
+  const [ingredientsDB, setIngredientsDB] = useState([]);
+  const [ingredientsByCategory, setIngredientsByCategory] = useState({});
+
   const [formData, setFormData] = useState({
     title: '',
     prepTime: '',
     cookTime: '',
     difficulty: 1,
-    flavor: 'Salty',
+    flavor: FLAVORS[0],
     servings: 2,
     cuisineType: 'Other',
     ingredients: [],
@@ -51,8 +44,36 @@ export default function CreateRecipe() {
     image: '' 
   });
 
-  // HANDLERS
+  // FETCH INGREDIENTS FROM BACKEND
+  useEffect(() => {
+    const fetchIngredients = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/ingredients', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (!res.ok) throw new Error("Failed to fetch ingredients");
+        const data = await res.json();
+        setIngredientsDB(data);
 
+        // Group by category
+        const grouped = {};
+        data.forEach(ing => {
+          if (!grouped[ing.category]) grouped[ing.category] = [];
+          grouped[ing.category].push(ing.name);
+        });
+        setIngredientsByCategory(grouped);
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchIngredients();
+  }, [token]);
+
+
+  // HANDLERS
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -81,7 +102,6 @@ export default function CreateRecipe() {
     } else {
         newIngredients[index][field] = value;
     }
-    
     setFormData({ ...formData, ingredients: newIngredients });
   };
 
@@ -89,7 +109,7 @@ export default function CreateRecipe() {
     setIngredientError('');
     setFormData({
       ...formData,
-      ingredients: [...formData.ingredients, { category: '', name: '', quantity: '', unit: 'g' }]
+      ingredients: [...formData.ingredients, { category: '', name: '', quantity: '', unit: PREDEFINED_UNITS[0] }]
     });
   };
 
@@ -105,7 +125,6 @@ export default function CreateRecipe() {
   };
 
   // CREATE ACTION
-
   const handleCreate = async (e) => {
     e.preventDefault();
     
@@ -247,8 +266,7 @@ export default function CreateRecipe() {
              <div style={{flex: 1, minWidth: '180px'}}>
                 <label style={{fontWeight: 'bold', display:'block', marginBottom:'8px'}}>Flavor</label>
                 <select name="flavor" value={formData.flavor} onChange={handleChange} className="login-input">
-                    <option value="Salty">Salty</option>
-                    <option value="Sweet">Sweet</option>
+                    {FLAVORS.map(f => <option key={f} value={f}>{f}</option>)}
                 </select>
              </div>
              <div style={{flex: 1, minWidth: '180px'}}>
@@ -274,9 +292,9 @@ export default function CreateRecipe() {
                         style={{flex: 2, minWidth: '120px', marginBottom: 0}}
                     >
                         <option value="">Category...</option>
-                        {Object.keys(INGREDIENT_DATA).map(cat => (
+                         {Object.keys(ingredientsByCategory).sort().map(cat => (
                             <option key={cat} value={cat}>{cat}</option>
-                        ))}
+                          ))}
                     </select>
 
                     {/* 2. SELECT INGREDIENT (Based on Category) */}
@@ -288,8 +306,8 @@ export default function CreateRecipe() {
                         disabled={!ing.category} // Disable if no category picked
                     >
                         <option value="">Ingredient...</option>
-                        {ing.category && INGREDIENT_DATA[ing.category].sort().map(item => (
-                            <option key={item} value={item}>{item}</option>
+                        {ing.category && ingredientsByCategory[ing.category]?.sort().map(item => (
+                          <option key={item} value={item}>{item}</option>
                         ))}
                     </select>
 

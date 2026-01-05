@@ -15,11 +15,9 @@ const router = express.Router();
 
 // 1. Static/Specific Routes MUST come first
 router.get("/", getAllUsers);
-
-// --- MOVED UP ---
 router.get("/me/favorites", authenticateToken, getFavorites);
 router.post("/me/favorites", authenticateToken, toggleFavorite);
-// ----------------
+router.delete("/me/favorites/:recipeId", authenticateToken, toggleFavorite);
 
 // 2. Dynamic Routes (/:id) catch everything else, so they go LAST
 router.get("/:id", getUserById);

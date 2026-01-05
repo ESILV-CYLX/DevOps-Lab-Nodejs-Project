@@ -10,7 +10,7 @@ const recipeSchema = new mongoose.Schema({
     difficulty:  { type: Number, required: true },
     cuisineType: { type: String, required: true },
     // NEW: Flavor
-    flavor:      { type: String, required: true, enum: ["Salty", "Sweet"] },
+    flavor:      { type: String, required: true, enum: ["Salty", "Sweet", "Savory", "Spicy", "Mild", "Sweet & Sour", "Umami", "Bitter"] },
     servings:    { type: Number, required: true },
     tags:        { type: [String], default: [] },
     instructions:{ type: [String], default: [] },

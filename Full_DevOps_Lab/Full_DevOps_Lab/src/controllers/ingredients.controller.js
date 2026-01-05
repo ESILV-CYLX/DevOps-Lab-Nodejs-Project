@@ -1,10 +1,21 @@
 import IngredientModel from "../models/Ingredient.js";
+import { IngredientCategory } from "../models/enums/IngredientCategory.js";
 
 // GET all ingredients
 export const getAllIngredients = async (req, res) => {
   try {
     const ingredients = await IngredientModel.find().sort({ name: 1 });
     res.status(200).json(ingredients);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// GET ingredient categories
+export const getIngredientCategories = async (req, res) => {
+  try {
+    const categories = Object.values(IngredientCategory);
+    res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
