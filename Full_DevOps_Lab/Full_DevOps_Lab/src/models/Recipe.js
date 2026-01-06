@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { CuisineType } from "./enums/CuisineType.js";
 import { Flavors } from "./enums/Flavors.js";
 import { Units } from "./enums/Units.js";
+import { IngredientCategory } from "./enums/IngredientCategory.js";
 
 // Recipe Schema for MongoDB
 const recipeSchema = new mongoose.Schema({
@@ -35,7 +36,8 @@ const recipeSchema = new mongoose.Schema({
             unit: { 
                 type: String, 
                 enum: Object.values(Units)
-            }
+            },
+            category: { type: String, enum: Object.values(IngredientCategory) }
         }],
         // Valider la présence d'au moins 1 ingrédient
         validate: {

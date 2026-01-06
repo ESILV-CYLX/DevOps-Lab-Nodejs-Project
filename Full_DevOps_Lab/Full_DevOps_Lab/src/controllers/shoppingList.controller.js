@@ -1,4 +1,5 @@
 import shoppingService from '../services/shoppingList.service.js';
+import ShoppingList from '../models/ShoppingList.js';
 
 // GET /shopping-list
 const getShoppingList = async (req, res) => {
@@ -71,9 +72,25 @@ const deleteItem = async (req, res) => {
   }
 };
 
+// DELETE /shopping-list/clear
+const clearList = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const updatedList = await ShoppingList.findOneAndUpdate(
+            { userId: userId },
+            { $set: { items: [] } }, // Vide le tableau items
+            { new: true }
+        );
+        res.json(updatedList);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 export default {
   getShoppingList,
   addItem,
   updateItem,
-  deleteItem
+  deleteItem,
+  clearList
 };

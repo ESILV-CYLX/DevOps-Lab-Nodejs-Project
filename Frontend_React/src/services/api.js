@@ -144,7 +144,7 @@ export const shoppingListService = {
       headers: getHeaders(token),
       body: JSON.stringify(itemData)
     });
-    if (!res.ok) throw new Error("Failed to add item to list");
+    if (!res.ok) throw new Error("Failed to add item to shopping list");
     return res.json();
   },
 
@@ -154,7 +154,7 @@ export const shoppingListService = {
       headers: getHeaders(token),
       body: JSON.stringify(updateData)
     });
-    if (!res.ok) throw new Error("Failed to update item");
+    if (!res.ok) throw new Error("Failed to update item to shopping list");
     return res.json();
   },
 
@@ -163,7 +163,16 @@ export const shoppingListService = {
       method: 'DELETE',
       headers: getHeaders(token)
     });
-    if (!res.ok) throw new Error("Failed to delete item");
+    if (!res.ok) throw new Error("Failed to delete item from shopping list");
     return true;
+  },
+
+  clearList: async (token) => {
+    const response = await fetch(`${API_BASE_URL}/shopping-list/clear`, {
+        method: 'DELETE',
+        headers: getHeaders(token)
+    });
+    if (!response.ok) throw new Error('Failed to clear the shopping list');
+    return response.json();
   }
 };

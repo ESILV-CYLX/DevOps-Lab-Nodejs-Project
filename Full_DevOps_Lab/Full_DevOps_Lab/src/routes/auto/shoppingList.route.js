@@ -9,6 +9,7 @@ router.use(authenticateToken);
 
 router.get('/', shoppingController.getShoppingList);
 router.post('/item', shoppingController.addItem);
+router.delete('/clear',shoppingController.clearList);
 router.put('/item/:itemId', shoppingController.updateItem);
 router.delete('/item/:itemId', shoppingController.deleteItem);
 

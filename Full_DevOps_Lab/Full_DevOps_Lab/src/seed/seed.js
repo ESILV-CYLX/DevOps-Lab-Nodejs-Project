@@ -529,17 +529,33 @@ async function seed() {
     await connectDB();
 
     try {
-        console.log("Deleting old data");
+        console.log("- Deleting old data -");
         await IngredientModel.deleteMany();
         await RecipeModel.deleteMany();
         // await RetailCompanyModel.deleteMany();
         // await UserModel.deleteMany();
 
-        console.log("Inserting ingredients");
+        console.log("- Inserting ingredients -");
         await IngredientModel.insertMany(ingredientsData);
 
-        console.log("Inserting Recipes");
-        await RecipeModel.insertMany(recipesData, {
+        console.log("- Processing recipes with categories -");
+        const enrichedRecipes = recipesData.map(recipe => {
+            return {
+                ...recipe,
+                ingredients: recipe.ingredients.map(ing => {
+                    // On cherche l'ingrédient correspondant dans ingredientsData
+                    const reference = ingredientsData.find(i => i.ingredientId === ing.ingredientId);
+                    return {
+                        ...ing,
+                        // On injecte la catégorie trouvée ou 'OTHER' par défaut
+                        category: reference ? reference.category : IngredientCategory.OTHER
+                    };
+                })
+            };
+        });
+
+        console.log("- Inserting enriched Recipes -");
+        await RecipeModel.insertMany(enrichedRecipes, {
             ordered: false
         });
 

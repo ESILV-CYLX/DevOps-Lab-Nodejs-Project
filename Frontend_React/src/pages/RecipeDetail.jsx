@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowLeft, Clock, ChefHat, User, Flame, Edit, ShoppingBag, Check, Heart } from 'lucide-react'; 
+import { ArrowLeft, Clock, ChefHat, User, Flame, Edit, ShoppingBag, CheckCircle, Check, Heart } from 'lucide-react'; 
 import { recipeService, shoppingListService } from '../services/api';
 
 export default function RecipeDetail() {
@@ -13,6 +13,8 @@ export default function RecipeDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [addedIngredients, setAddedIngredients] = useState({});
+  const [addingAll, setAddingAll] = useState(false);
+  const [allAdded, setAllAdded] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
@@ -49,19 +51,53 @@ export default function RecipeDetail() {
       }
   };
 
+  const addAllToShoppingList = async () => {
+    if (!recipe.ingredients || recipe.ingredients.length === 0) return;
+    
+    setAddingAll(true);
+    try {
+      const promises = recipe.ingredients.map(ing => 
+        shoppingListService.addItem(token, {
+          name: ing.name,
+          quantity: ing.quantity,
+          unit: ing.unit,
+          category: ing.category || 'OTHER'
+        })
+      );
+
+      await Promise.all(promises);
+      
+      // Feedback visuel
+      setAllAdded(true);
+
+      const allIndices = {};
+      recipe.ingredients.forEach((_, i) => allIndices[i] = true);
+      setAddedIngredients(allIndices);
+
+      setTimeout(() => {
+        setAllAdded(false);
+        setAddingAll(false);
+      }, 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Error adding all ingredients to shoppping list");
+      setAddingAll(false);
+    }
+  };
+
   const addToShoppingList = async (ingredient, index) => {
     try {
         await shoppingListService.addItem(token, {
         name: ingredient.name,
         quantity: ingredient.quantity,
         unit: ingredient.unit,
-        category: ingredient.category || "OTHERS"
+        category: ingredient.category || 'OTHER'
       });
 
       setAddedIngredients(prev => ({ ...prev, [index]: true }));
       setTimeout(() => setAddedIngredients(prev => ({ ...prev, [index]: false })), 2000);
     } catch (err) {
-      alert("Error adding to list");
+      alert("Error adding to shopping list");
     }
   };
 
@@ -123,11 +159,45 @@ export default function RecipeDetail() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '50px' }}>
         
         <div>
-          <h3 style={{borderBottom: '2px solid #eee', paddingBottom: '10px'}}>Ingredients</h3>
+          {/* TITRE ET BOUTON "ADD ALL" */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            borderBottom: '2px solid #eee', 
+            paddingBottom: '10px',
+            marginBottom: '15px' 
+          }}>
+            <h3 style={{ margin: 0 }}>Ingredients</h3>
+            <button
+              onClick={addAllToShoppingList}
+              disabled={addingAll || allAdded}
+              style={{
+                background: allAdded ? '#2e7d32' : 'black',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '6px 12px',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                cursor: addingAll ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              {allAdded ? (
+                <><CheckCircle size={14} /> Added!</>
+              ) : (
+                <><ShoppingBag size={14} /> {addingAll ? 'Adding...' : 'Add all'}</>
+              )}
+            </button>
+          </div>
+
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {recipe.ingredients && recipe.ingredients.map((ing, index) => (
                 <li key={index} style={{ padding: '15px 0', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    
                     <div style={{flex: 1}}>
                         <span style={{display: 'block', fontSize: '1rem', fontWeight: '500'}}>{ing.name}</span>
                         <span style={{color: '#888', fontSize: '0.9rem'}}>
@@ -156,13 +226,13 @@ export default function RecipeDetail() {
                     >
                         {addedIngredients[index] ? <><Check size={16} /> Added</> : <><ShoppingBag size={16} /> + Add</>}
                     </button>
-
                 </li>
             ))}
             {(!recipe.ingredients || recipe.ingredients.length === 0) && <p>No ingredients listed.</p>}
           </ul>
         </div>
 
+        {/* INSTRUCTIONS */}
         <div>
           <h3 style={{borderBottom: '2px solid #eee', paddingBottom: '10px'}}>Instructions</h3>
           <div style={{ lineHeight: '1.8' }}>

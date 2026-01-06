@@ -4,48 +4,40 @@ export const getListByUserId = async (userId) => {
   return await ShoppingList.findOne({ userId: userId });
 };
 
-// --- ROBUST ADD ITEM (With Auto-Cleaning) ---
 export const addItem = async (userId, newItem) => {
-  let list = await ShoppingList.findOne({ userId });
-  
-  if (!list) {
-    list = await ShoppingList.create({ 
+  // Mise à jour item déjà existant (même nom & unité)
+  const result = await ShoppingList.findOneAndUpdate(
+    { 
       userId, 
-      items: [], 
-      updatedAt: new Date() 
-    });
-  } else {
-    // === SANITIZATION STEP ===
-    // Filter out any item that is "corrupted" (missing a name) from old tests
-    const originalLength = list.items.length;
-    list.items = list.items.filter(item => item && item.name);
-    
-    if (list.items.length !== originalLength) {
-        console.log(`[Auto-Clean] Removed ${originalLength - list.items.length} corrupted items for user ${userId}`);
-    }
-  }
-
-  // Now it is safe to loop because we know all items have names
-  const existingItemIndex = list.items.findIndex(item => 
-    item.name.toLowerCase() === newItem.name.toLowerCase() && 
-    item.unit === newItem.unit
+      "items.name": { $regex: new RegExp(`^${newItem.name}$`, 'i') }, // Case insensitive
+      "items.unit": newItem.unit 
+    },
+    { 
+      $inc: { "items.$.quantity": parseFloat(newItem.quantity) } //Incrémentation atomique
+    },
+    { new: true }
   );
 
-  if (existingItemIndex > -1) {
-    // UPDATE: Sum the quantity
-    list.items[existingItemIndex].quantity += parseFloat(newItem.quantity);
-  } else {
-    // INSERT: Push new item
-    list.items.push({
-        name: newItem.name,
-        quantity: parseFloat(newItem.quantity),
-        unit: newItem.unit,
-        category: newItem.category || "Divers",
-        checked: false
-    });
+  // Si result est null, l'item n'existait pas, on l'ajoute au tableau
+  if (!result) {
+    return await ShoppingList.findOneAndUpdate(
+      { userId },
+      { 
+        $push: { 
+          items: {
+            name: newItem.name,
+            quantity: parseFloat(newItem.quantity),
+            unit: newItem.unit,
+            category: newItem.category || "OTHER",
+            checked: false
+          } 
+        } 
+      },
+      { upsert: true, new: true } // upsert: true crée la liste si elle n'existe pas
+    );
   }
 
-  return await list.save();
+  return result;
 };
 
 export const updateItem = async (userId, itemId, updateData) => {
