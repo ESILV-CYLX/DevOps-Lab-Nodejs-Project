@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { ArrowLeft, Clock, ChefHat, User, Flame, Edit, ShoppingBag, Check, Heart } from 'lucide-react'; 
+import { recipeService, shoppingListService } from '../services/api';
 
 export default function RecipeDetail() {
   const { id } = useParams();
@@ -17,22 +18,13 @@ export default function RecipeDetail() {
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/recipes/${id}`, {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
-        if (!response.ok) throw new Error('Recipe not found');
-        const data = await response.json();
+        const data = await recipeService.getById(token, id);
         setRecipe(data);
 
         if (token) {
-            const favRes = await fetch('http://localhost:3000/users/me/favorites', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (favRes.ok) {
-                const favData = await favRes.json();
-                const isFav = favData.some(f => f.recipeId === data.recipeId);
-                setIsLiked(isFav);
-            }
+          const favorites = await recipeService.getFavorites(token);
+          const isFav = favorites.some(f => f.recipeId === data.recipeId);
+          setIsLiked(isFav);
         }
       } catch (err) {
         setError(err.message);
@@ -46,51 +38,30 @@ export default function RecipeDetail() {
   const toggleLike = async () => {
       if (!user) return;
       
-      const newState = !isLiked;
-      setIsLiked(newState); 
+      const previousState = isLiked;
+      setIsLiked(!previousState); 
 
       try {
-          const res = await fetch(`http://localhost:3000/users/me/favorites`, {
-              method: 'POST', // Always use POST to toggle
-              headers: { 
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}` 
-              },
-              body: JSON.stringify({ recipeId: recipe.recipeId })
-          });
-          if (!res.ok) throw new Error("Failed to toggle like");
+        await recipeService.toggleFavorite(token, recipe.recipeId, !previousState);
       } catch (err) {
-          setIsLiked(!newState); // Revert
+          setIsLiked(previousState); // Revert
           console.error(err);
       }
   };
 
   const addToShoppingList = async (ingredient, index) => {
     try {
-        const res = await fetch('http://localhost:3000/shopping-list/item', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                name: ingredient.name,
-                quantity: ingredient.quantity,
-                unit: ingredient.unit,
-                category: ingredient.category || "Divers"
-            })
-        });
+        await shoppingListService.addItem(token, {
+        name: ingredient.name,
+        quantity: ingredient.quantity,
+        unit: ingredient.unit,
+        category: ingredient.category || "OTHERS"
+      });
 
-        if (res.ok) {
-            setAddedIngredients(prev => ({ ...prev, [index]: true }));
-            setTimeout(() => {
-                setAddedIngredients(prev => ({ ...prev, [index]: false }));
-            }, 2000);
-        } else {
-            alert("Failed to add to list");
-        }
+      setAddedIngredients(prev => ({ ...prev, [index]: true }));
+      setTimeout(() => setAddedIngredients(prev => ({ ...prev, [index]: false })), 2000);
     } catch (err) {
-        console.error(err);
+      alert("Error adding to list");
     }
   };
 

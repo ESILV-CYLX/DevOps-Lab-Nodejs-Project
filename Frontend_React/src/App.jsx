@@ -2,18 +2,18 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Home, Search, Calendar, List, Heart, Settings, PlusCircle, LogOut, ChefHat } from 'lucide-react';
-import { AuthProvider, useAuth } from './AuthContext';
-import Dashboard from './Dashboard';
-import LoginPage from './LoginPage';
-import RecipeDetail from './RecipeDetail';
-import SettingsPage from './SettingsPage';
-import './App.css';
-import CreateRecipe from './CreateRecipe';
-import MyRecipes from './MyRecipes';
-import SavedRecipes from './SavedRecipes';
-import ModifyRecipe from './ModifyRecipe';
-import ShoppingList from './ShoppingList';
-import AddIngredient from './AddIngredient';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import Dashboard from './pages/Dashboard';
+import LoginPage from './pages/LoginPage';
+import RecipeDetail from './pages/RecipeDetail';
+import SettingsPage from './pages/SettingsPage';
+import './styles/App.css';
+import CreateRecipe from './pages/CreateRecipe';
+import MyRecipes from './pages/MyRecipes';
+import SavedRecipes from './pages/SavedRecipes';
+import ModifyRecipe from './pages/ModifyRecipe';
+import ShoppingList from './pages/ShoppingList';
+import AddIngredient from './pages/AddIngredient';
 
 const Sidebar = () => {
   const location = useLocation();

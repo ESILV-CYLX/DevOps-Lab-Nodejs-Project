@@ -1,19 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { ArrowLeft, Trash2, Save, Plus, X, UploadCloud, AlertCircle } from 'lucide-react';
-
-// --- DATA: CATEGORIES & INGREDIENTS ---
-const INGREDIENT_DATA = {
-  "Vegetables & Greens": ["Tomato", "Onion", "Garlic", "Potato", "Carrot", "Bell Pepper", "Spinach", "Lettuce", "Cucumber", "Avocado", "Mushrooms", "Zucchini", "Broccoli", "Cauliflower", "Corn", "Green Beans", "Ginger"],
-  "Fruits": ["Apple", "Banana", "Lemon", "Lime", "Orange", "Strawberry", "Blueberry", "Pineapple", "Mango", "Grapes"],
-  "Meat & Poultry": ["Chicken Breast", "Chicken Thighs", "Ground Beef", "Steak", "Bacon", "Pork Chop", "Turkey", "Lamb", "Sausage", "Ham"],
-  "Seafood": ["Salmon", "Tuna", "Shrimp", "Cod", "Crab", "Lobster", "Mussels", "Scallops"],
-  "Dairy & Eggs": ["Butter", "Eggs", "Milk", "Cheese", "Cheddar", "Mozzarella", "Parmesan", "Yogurt", "Cream", "Sour Cream"],
-  "Grains & Bread": ["Rice", "Pasta", "Spaghetti", "Noodles", "Bread", "Tortilla", "Quinoa", "Oats", "Flour", "Breadcrumbs"],
-  "Pantry & Spices": ["Sugar", "Salt", "Olive Oil", "Vegetable Oil", "Soy Sauce", "Vinegar", "Honey", "Mustard", "Mayonnaise", "Ketchup", "Tomato Sauce", "Broth", "Black Pepper", "Chili Powder", "Cinnamon", "Vanilla Extract", "Baking Powder", "Cumin", "Paprika", "Turmeric"],
-  "Herbs": ["Basil", "Oregano", "Parsley", "Thyme", "Cilantro", "Rosemary", "Mint", "Dill", "Chives"]
-};
+import { recipeService, ingredientService } from '../services/api';
 
 const PREDEFINED_UNITS = [
   "g", "kg", "ml", "cl", "L", "tbsp", "tsp", "cup", "pcs", "pinch", "slice", "clove", "can"
@@ -33,9 +22,9 @@ export default function ModifyRecipe() {
   const [loading, setLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState(null);
   
-  // Specific Error States
   const [ingredientError, setIngredientError] = useState('');
   const [imageError, setImageError] = useState('');
+  const [allIngredientsFromDB, setAllIngredientsFromDB] = useState([]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -55,43 +44,30 @@ export default function ModifyRecipe() {
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/recipes/${id}`, {
-             headers: { 
-                 'Authorization': `Bearer ${token}`,
-                 'Content-Type': 'application/json'
-             }
+        const [recipe, allIngredients] = await Promise.all([
+          recipeService.getById(token, id),
+          ingredientService.getAll(token)
+        ]);
+
+        setAllIngredientsFromDB(allIngredients);
+
+        if (user && recipe.userId !== user.userId) {
+            alert("You are not the owner of this recipe!");
+            navigate('/');
+            return;
+        }
+
+        // --- REVERSE LOOKUP: FIND CATEGORY FOR EACH INGREDIENT ---
+        const enrichedIngredients = recipe.ingredients.map(ing => {
+          const found = allIngredients.find(dbIng => dbIng.name === ing.name);
+          return { ...ing, category: found ? found.category : 'OTHER' };
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          if (user && data.userId !== user.userId) {
-             alert("You are not the owner of this recipe!");
-             navigate('/');
-             return;
-          }
-
-          // --- REVERSE LOOKUP: FIND CATEGORY FOR EACH INGREDIENT ---
-          // Because the DB doesn't store 'category', we must guess it so the UI works
-          const enrichedIngredients = (data.ingredients || []).map(ing => {
-             let foundCat = '';
-             for (const [cat, items] of Object.entries(INGREDIENT_DATA)) {
-                 if (items.includes(ing.name)) {
-                     foundCat = cat;
-                     break;
-                 }
-             }
-             return { ...ing, category: foundCat };
-          });
-          // ---------------------------------------------------------
-
-          setFormData({ ...data, ingredients: enrichedIngredients });
-          if (data.image) setImagePreview(data.image);
-        } else {
-            alert("Recipe not found or server error.");
-            navigate('/');
-        }
+        setFormData({ ...recipe, ingredients: enrichedIngredients });
+        if (recipe.image) setImagePreview(recipe.image);
       } catch (err) {
         console.error(err);
+        navigate('/');
       } finally {
         setLoading(false);
       }
@@ -99,6 +75,14 @@ export default function ModifyRecipe() {
     
     if (token && user) fetchRecipe();
   }, [id, token, user, navigate]);
+
+  const categories = [...new Set(allIngredientsFromDB.map(i => i.category))].sort();
+  const getIngredientsByCategory = (categoryName) => {
+    return allIngredientsFromDB
+      .filter(i => i.category === categoryName)
+      .map(i => i.name)
+      .sort();
+  };
 
   // --- HANDLERS ---
 
@@ -193,22 +177,9 @@ export default function ModifyRecipe() {
     delete payload.recipeId;
 
     try {
-      const res = await fetch(`http://localhost:3000/recipes/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (res.ok) {
-        alert("Recipe updated!");
-        navigate(`/recipe/${id}`);
-      } else {
-        const errData = await res.json();
-        alert(`Failed to update: ${errData.message}`);
-      }
+      await recipeService.update(token, id, payload);
+      alert("Recipe updated!");
+      navigate(`/recipe/${id}`);
     } catch (err) {
       alert("Error updating recipe");
     }
@@ -218,18 +189,10 @@ export default function ModifyRecipe() {
     if (!window.confirm("Are you sure you want to delete this recipe?")) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/recipes/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (res.ok) {
-        navigate('/'); 
-        window.location.reload(); 
-      } else {
-        alert("Failed to delete");
-      }
+      await recipeService.delete(token, id);
+      navigate('/');
     } catch (err) {
+      alert("Failed to delete");
       console.error(err);
     }
   };
@@ -331,7 +294,7 @@ export default function ModifyRecipe() {
                         style={{flex: 2, minWidth: '120px', marginBottom: 0}}
                     >
                         <option value="">Category...</option>
-                        {Object.keys(INGREDIENT_DATA).map(cat => (
+                        {categories.map(cat => (
                             <option key={cat} value={cat}>{cat}</option>
                         ))}
                     </select>
@@ -344,8 +307,8 @@ export default function ModifyRecipe() {
                         disabled={!ing.category}
                     >
                         <option value="">Ingredient...</option>
-                        {ing.category && INGREDIENT_DATA[ing.category].sort().map(item => (
-                            <option key={item} value={item}>{item}</option>
+                        {ing.category && getIngredientsByCategory(ing.category).map(name => (
+                            <option key={name} value={name}>{name}</option>
                         ))}
                     </select>
 

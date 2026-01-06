@@ -1,7 +1,23 @@
 import Recipe from "../models/Recipe.js";
 import User from "../models/User.js"; 
+import { CuisineType } from "../models/enums/CuisineType.js";
+import { Flavors } from "../models/enums/Flavors.js";
+import { Units } from "../models/enums/Units.js";
 
-// 1. GET ALL RECIPES
+// GET RECIPE METADATA
+export const getRecipeMetadata = async (req, res) => {
+  try {
+    res.json({
+      cuisineTypes: Object.values(CuisineType),
+      flavors: Object.values(Flavors),
+      units: Object.values(Units)
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching metadata", error: err.message });
+  }
+};
+
+// GET ALL RECIPES
 export const getRecipes = async (req, res) => {
   try {
     const recipes = await Recipe.find({ privacy: false });
@@ -11,7 +27,7 @@ export const getRecipes = async (req, res) => {
   }
 };
 
-// 2. GET RECIPE BY ID
+// GET RECIPE BY ID
 export const getRecipeById = async (req, res) => {
   try {
     const recipeId = parseInt(req.params.id);
@@ -26,7 +42,7 @@ export const getRecipeById = async (req, res) => {
   }
 };
 
-// 3. CREATE RECIPE
+// CREATE RECIPE
 export const createRecipe = async (req, res) => {
   try {
     const recipeId = Math.floor(100000 + Math.random() * 900000);
@@ -57,7 +73,7 @@ export const createRecipe = async (req, res) => {
   }
 };
 
-// 4. UPDATE RECIPE (FIXED INGREDIENT IDs)
+// UPDATE RECIPE (FIXED INGREDIENT IDs)
 export const updateRecipe = async (req, res) => {
   try {
     const recipeId = parseInt(req.params.id);
@@ -113,7 +129,7 @@ export const updateRecipe = async (req, res) => {
   }
 };
 
-// 5. DELETE RECIPE
+// DELETE RECIPE
 export const deleteRecipe = async (req, res) => {
   try {
     const recipeId = parseInt(req.params.id);

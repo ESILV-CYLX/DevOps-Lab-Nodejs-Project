@@ -48,13 +48,26 @@ const updateItem = async (req, res) => {
 // DELETE /shopping-list/item/:itemId
 const deleteItem = async (req, res) => {
   try {
-    const userId = req.userId;
-    const { itemId } = req.params;
+    const itemId = req.params.itemId;
+    const userId = req.userId; // Récupéré via authenticateToken
 
-    await shoppingService.deleteItem(userId, itemId);
-    res.status(200).json({ message: "Item deleted" });
+    // On cherche la liste de l'utilisateur et on retire l'élément avec l'ID spécifié
+    const updatedList = await ShoppingList.findOneAndUpdate(
+      { userId: userId },
+      { 
+        $pull: { items: { _id: itemId } } 
+      },
+      { new: true } // Renvoie la liste mise à jour
+    );
+
+    if (!updatedList) {
+      return res.status(404).json({ message: "Shopping list not found" });
+    }
+
+    res.status(200).json({ message: "Item deleted successfully", list: updatedList });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Delete Item Error:", error);
+    res.status(500).json({ message: "Error deleting item", error: error.message });
   }
 };
 

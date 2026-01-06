@@ -1,53 +1,49 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { ArrowLeft, ShoppingBasket } from 'lucide-react';
-
-const CATEGORIES = [
-  "FRUIT", "VEGETABLE", "MEAT", "DAIRY", "GRAIN", "SPICE", "OTHER"
-];
+import { ingredientService } from '../services/api';
 
 export default function AddIngredient() {
   const navigate = useNavigate();
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
 
   const [formData, setFormData] = useState({
     name: '',
-    category: 'OTHER',
+    category: '',
     price: ''
   });
+
+  useEffect(() => {
+    const fetchCats = async () => {
+      try {
+        const data = await ingredientService.getCategories(token);
+        setCategories(data);
+        // Définit la première catégorie comme valeur par défaut
+        if (data.length > 0) {
+          setFormData(prev => ({ ...prev, category: data[0] }));
+        }
+      } catch (err) {
+        console.error("Could not load categories", err);
+      }
+    };
+    if (token) fetchCats();
+  }, [token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    console.log("Token:", token);
-
     try {
-      const res = await fetch('http://localhost:3000/ingredients', { // Pour matcher ingredients.route.js
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          category: formData.category,
-          price: parseFloat(formData.price)
-        })
+      await ingredientService.create(token, {
+        ...formData,
+        price: parseFloat(formData.price)
       });
-
-      if (res.ok) {
-        alert("Ingredient added to catalog!");
-        navigate('/'); 
-      } else {
-        const data = await res.json();
-        alert(`Error: ${data.message}`);
-      }
+      alert("Ingredient added to catalog!");
+      navigate('/');
     } catch (err) {
-      console.error(err);
-      alert("Failed to connect to server.");
+      alert(err.message);
     } finally {
       setLoading(false);
     }
@@ -83,8 +79,16 @@ export default function AddIngredient() {
             className="login-input"
             value={formData.category}
             onChange={(e) => setFormData({...formData, category: e.target.value})}
+            required
           >
-            {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            {/* Si les catégories ne sont pas encore chargées */}
+            {categories.length === 0 && <option value="">Loading categories...</option>}
+            
+            {categories.map(cat => (
+              <option key={cat} value={cat}>
+                {cat.charAt(0) + cat.slice(1).toLowerCase()}
+              </option>
+            ))}
           </select>
         </div>
 

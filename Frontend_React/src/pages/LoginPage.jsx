@@ -1,7 +1,7 @@
-// src/LoginPage.jsx
-import React, { useState } from 'react';
-import { useAuth } from './AuthContext';
+import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/api';
 
 export default function LoginPage() {
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -25,40 +25,19 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
-
-    const endpoint = isLoginMode 
-      ? 'http://localhost:3000/auth/login' 
-      : 'http://localhost:3000/auth/signup';
-
     try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (isLoginMode) {
-          // On passe l'objet User complet ET le Token
-          // Le backend renvoie { message, token, user }
-          const userData = data.user || { name: formData.username }; // Fallback si user vide
-          console.log("Login successful, token:", data.token);
-          login(userData, data.token); 
-          navigate('/');
-        } else {
-          setMessage('Compte créé avec succès ! Connectez-vous.');
-          setIsLoginMode(true);
-          // On vide le mot de passe mais on garde le reste pour faciliter la connexion
-          setFormData(prev => ({ ...prev, password: '' })); 
-        }
+      if (isLoginMode) {
+        const data = await authService.login(formData);
+        login(data.user || { name: formData.username }, data.token);
+        navigate('/');
       } else {
-        setMessage(data.error || 'Une erreur est survenue');
+        await authService.signup(formData);
+        setMessage('Compte créé avec succès ! Connectez-vous.');
+        setIsLoginMode(true);
+        setFormData(prev => ({ ...prev, password: '' }));
       }
-    } catch (error) {
-      console.error(error);
-      setMessage("Impossible de contacter le serveur (Vérifie qu'il tourne sur le port 3000 !)");
+    } catch (err) {
+      setMessage(err.message);
     }
   };
 

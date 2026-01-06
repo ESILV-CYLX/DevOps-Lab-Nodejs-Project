@@ -1,22 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from './AuthContext';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { Trash2, ShoppingCart, CheckSquare, Square } from 'lucide-react';
+import { shoppingListService } from '../services/api';
 
 export default function ShoppingList() {
   const { token } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch List
   const fetchList = async () => {
     try {
-      const res = await fetch('http://localhost:3000/shopping-list', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setItems(data.items || []);
-      }
+      const data = await shoppingListService.get(token);
+      setItems(data.items || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -28,45 +23,28 @@ export default function ShoppingList() {
     if (token) fetchList();
   }, [token]);
 
-  // Toggle Checkbox
   const toggleCheck = async (itemId, currentStatus) => {
-    // 1. Optimistic Update (Instant UI change)
-    const updatedItems = items.map(item => 
-      item._id === itemId ? { ...item, checked: !currentStatus } : item
-    );
-    setItems(updatedItems);
+    // Optimistic Update
+    setItems(items.map(item => item._id === itemId ? { ...item, checked: !currentStatus } : item));
 
-    // 2. API Call
     try {
-      await fetch(`http://localhost:3000/shopping-list/item/${itemId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ checked: !currentStatus })
-      });
+      await shoppingListService.updateItem(token, itemId, { checked: !currentStatus });
     } catch (err) {
-      console.error("Failed to sync check status");
+      console.error("Sync failed");
+      fetchList(); // Revert en cas d'erreur
     }
   };
 
-  // Delete Item
   const deleteItem = async (itemId) => {
-    if (!window.confirm("Remove this item?")) return;
+    if (!window.confirm("Remove item?")) return;
     
-    // 1. Optimistic Update
+    const previousItems = [...items];
     setItems(items.filter(i => i._id !== itemId));
 
-    // 2. API Call
     try {
-      await fetch(`http://localhost:3000/shopping-list/item/${itemId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      await shoppingListService.deleteItem(token, itemId);
     } catch (err) {
-      console.error("Failed to delete item");
-      fetchList(); // Revert on error
+      setItems(previousItems); // Revert
     }
   };
 

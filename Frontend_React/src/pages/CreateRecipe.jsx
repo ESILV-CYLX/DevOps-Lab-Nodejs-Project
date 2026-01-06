@@ -1,20 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { ArrowLeft, ChefHat, Plus, X, UploadCloud, AlertCircle } from 'lucide-react';
-
-const PREDEFINED_UNITS = [
-  "g", "kg", "ml", "cl", "L", "tbsp", "tsp", "cup", "pcs", "pinch", "slice", "clove", "can"
-];
-
-// Complete Cuisine List
-const CUISINE_TYPES = [
-  "African", "American", "Asian", "British", "Chinese", "French", "German", 
-  "Greek", "Indian", "Italian", "Japanese", "Korean", "Mediterranean", 
-  "Mexican", "Middle Eastern", "Spanish", "Thai", "Other"
-];
-
-const FLAVORS = ["Salty", "Sweet", "Savory", "Spicy", "Mild", "Sweet & Sour", "Umami", "Bitter"];
+import { recipeService, ingredientService } from '../services/api';
 
 export default function CreateRecipe() {
   const navigate = useNavigate();
@@ -22,22 +10,23 @@ export default function CreateRecipe() {
   
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
-  
-  // Specific Error States
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  const [metadata, setMetadata] = useState({ cuisineTypes: [], flavors: [], units: [] });
+  const [ingredientsByCategory, setIngredientsByCategory] = useState({});
+  const [categoryList, setCategoryList] = useState([]);
+
   const [ingredientError, setIngredientError] = useState('');
   const [imageError, setImageError] = useState('');
-
-  const [ingredientsDB, setIngredientsDB] = useState([]);
-  const [ingredientsByCategory, setIngredientsByCategory] = useState({});
 
   const [formData, setFormData] = useState({
     title: '',
     prepTime: '',
     cookTime: '',
     difficulty: 1,
-    flavor: FLAVORS[0],
+    flavor: '',
     servings: 2,
-    cuisineType: 'Other',
+    cuisineType: '',
     ingredients: [],
     description: '',
     instructions: [],
@@ -46,30 +35,39 @@ export default function CreateRecipe() {
 
   // FETCH INGREDIENTS FROM BACKEND
   useEffect(() => {
-    const fetchIngredients = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch('http://localhost:3000/ingredients', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        if (!res.ok) throw new Error("Failed to fetch ingredients");
-        const data = await res.json();
-        setIngredientsDB(data);
+        const [meta, ingredients, categories] = await Promise.all([
+          recipeService.getMetadata(token),
+          ingredientService.getAll(token),
+          ingredientService.getCategories(token)
+        ]);
 
-        // Group by category
+        setMetadata(meta);
+        setCategoryList(categories);
+
+        // Group ingredients by category
         const grouped = {};
-        data.forEach(ing => {
+        ingredients.forEach(ing => {
           if (!grouped[ing.category]) grouped[ing.category] = [];
           grouped[ing.category].push(ing.name);
         });
         setIngredientsByCategory(grouped);
 
+        // Set default values once metadata is loaded
+        setFormData(prev => ({
+          ...prev,
+          flavor: meta.flavors[0] || '',
+          cuisineType: meta.cuisineTypes[0] || ''
+        }));
+
       } catch (err) {
-        console.error(err);
+        console.error("Error loading initial data:", err);
+      } finally {
+        setInitialLoading(false);
       }
     };
-    fetchIngredients();
+    if (token) fetchData();
   }, [token]);
 
 
@@ -109,7 +107,7 @@ export default function CreateRecipe() {
     setIngredientError('');
     setFormData({
       ...formData,
-      ingredients: [...formData.ingredients, { category: '', name: '', quantity: '', unit: PREDEFINED_UNITS[0] }]
+      ingredients: [...formData.ingredients, { category: '', name: '', quantity: '', unit: metadata.units[0] || 'g' }]
     });
   };
 
@@ -171,30 +169,18 @@ export default function CreateRecipe() {
     };
 
     try {
-      const res = await fetch('http://localhost:3000/recipes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (res.ok) {
-        alert("Recipe published successfully! 🎉");
-        navigate('/'); 
-      } else {
-        const errData = await res.json();
-        alert(`Failed to create: ${errData.message}`);
-      }
+      await recipeService.create(token, payload);
+      alert("Recipe published successfully! 🎉");
+      navigate('/');
     } catch (err) {
       console.error(err);
       alert("Error creating recipe.");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
+  if (initialLoading) return <div style={{padding:'40px', textAlign:'center'}}>Loading catalog and settings...</div>;
   if (loading) return <div style={{padding:'40px', textAlign:'center'}}>Publishing...</div>;
 
   return (
@@ -266,13 +252,13 @@ export default function CreateRecipe() {
              <div style={{flex: 1, minWidth: '180px'}}>
                 <label style={{fontWeight: 'bold', display:'block', marginBottom:'8px'}}>Flavor</label>
                 <select name="flavor" value={formData.flavor} onChange={handleChange} className="login-input">
-                    {FLAVORS.map(f => <option key={f} value={f}>{f}</option>)}
+                  {metadata.flavors.map(f => <option key={f} value={f}>{f}</option>)}               
                 </select>
              </div>
              <div style={{flex: 1, minWidth: '180px'}}>
                 <label style={{fontWeight: 'bold', display:'block', marginBottom:'8px'}}>Cuisine Type *</label>
                 <select name="cuisineType" value={formData.cuisineType} onChange={handleChange} className="login-input">
-                    {CUISINE_TYPES.map(c => <option key={c} value={c}>{c}</option>)}
+                    {metadata.cuisineTypes.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
             </div>
         </div>
@@ -284,34 +270,34 @@ export default function CreateRecipe() {
             {formData.ingredients.map((ing, index) => (
                 <div key={index} style={{display: 'flex', gap: '10px', marginBottom: '15px', alignItems: 'center', flexWrap: 'wrap'}}>
                     
-                    {/* 1. SELECT CATEGORY */}
+                    {/* Category List from Backend */}
                     <select 
                         value={ing.category} 
                         onChange={(e) => handleIngredientChange(index, 'category', e.target.value)}
                         className="login-input" 
-                        style={{flex: 2, minWidth: '120px', marginBottom: 0}}
+                        style={{flex: 2, marginBottom: 0}}
                     >
                         <option value="">Category...</option>
-                         {Object.keys(ingredientsByCategory).sort().map(cat => (
-                            <option key={cat} value={cat}>{cat}</option>
-                          ))}
+                        {categoryList.map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
                     </select>
 
-                    {/* 2. SELECT INGREDIENT (Based on Category) */}
+                    {/* Filtered Ingredients based on Category */}
                     <select 
                         value={ing.name} 
                         onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
                         className="login-input" 
-                        style={{flex: 3, minWidth: '150px', marginBottom: 0}}
-                        disabled={!ing.category} // Disable if no category picked
+                        style={{flex: 3, marginBottom: 0}}
+                        disabled={!ing.category}
                     >
-                        <option value="">Ingredient...</option>
-                        {ing.category && ingredientsByCategory[ing.category]?.sort().map(item => (
+                        <option value="">Select...</option>
+                        {ing.category && ingredientsByCategory[ing.category]?.map(item => (
                           <option key={item} value={item}>{item}</option>
                         ))}
                     </select>
 
-                    {/* 3. QUANTITY */}
+                    {/* Quantity */}
                     <input 
                         type="number"
                         placeholder="Qty" 
@@ -322,14 +308,14 @@ export default function CreateRecipe() {
                         min="0" step="0.1"
                     />
 
-                    {/* 4. UNIT */}
+                    {/* Units */}
                     <select 
                         value={ing.unit} 
                         onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
                         className="login-input" 
                         style={{flex: 1, minWidth: '70px', marginBottom: 0}}
                     >
-                        {PREDEFINED_UNITS.map(u => (
+                        {metadata.units.map(u => (
                             <option key={u} value={u}>{u}</option>
                         ))}
                     </select>
