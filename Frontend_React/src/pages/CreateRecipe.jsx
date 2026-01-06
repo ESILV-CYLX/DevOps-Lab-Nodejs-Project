@@ -279,7 +279,9 @@ export default function CreateRecipe() {
                     >
                         <option value="">Category...</option>
                         {categoryList.map(cat => (
-                          <option key={cat} value={cat}>{cat}</option>
+                          <option key={cat} value={cat}>
+                            {cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase()}
+                          </option>
                         ))}
                     </select>
 
