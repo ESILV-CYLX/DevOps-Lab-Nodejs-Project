@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowLeft, ChefHat, Plus, X, UploadCloud, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ChefHat, Plus, X, UploadCloud, AlertCircle, Lock, Globe } from 'lucide-react';
 import { recipeService, ingredientService } from '../services/api';
 
 export default function CreateRecipe() {
@@ -30,7 +30,8 @@ export default function CreateRecipe() {
     ingredients: [],
     description: '',
     instructions: [],
-    image: '' 
+    image: '',
+    privacy: false
   });
 
   // FETCH INGREDIENTS FROM BACKEND
@@ -160,7 +161,7 @@ export default function CreateRecipe() {
         cookTime: parseInt(formData.cookTime) || 0,
         servings: parseInt(formData.servings) || 1,
         difficulty: parseInt(formData.difficulty) || 1,
-        
+        privacy: formData.privacy || false,
         ingredients: formData.ingredients.map(ing => ({
             name: ing.name,
             quantity: ing.quantity,
@@ -350,7 +351,51 @@ export default function CreateRecipe() {
             <textarea value={formData.instructions.join('\n')} onChange={handleInstructionChange} className="login-input" rows={8} placeholder="Step 1:..." style={{resize: 'vertical', fontFamily: 'inherit', whiteSpace: 'pre-wrap'}} required />
         </div>
         
-        {/* BUTTON */}
+        {/* PRIVACY SETTING */}
+        <div style={{ 
+            marginBottom: '30px', 
+            padding: '20px', 
+            background: formData.privacy ? '#fff8e1' : '#f0f4ff', 
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            transition: 'background 0.3s ease'
+        }}>
+            <div>
+                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>
+                    Recipe Visibility
+                </label>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>
+                    {formData.privacy 
+                        ? "Private: Only you can see this recipe." 
+                        : "Public: Everyone can discover and save your recipe."}
+                </p>
+            </div>
+            
+            <button 
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, privacy: !prev.privacy }))}
+                style={{
+                    background: formData.privacy ? '#ffa000' : '#1976d2',
+                    color: 'white',
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '30px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    fontWeight: 'bold',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+            >
+                {formData.privacy ? <Lock size={18} /> : <Globe size={18} />}
+                {formData.privacy ? "Private" : "Public"}
+            </button>
+        </div>
+
+        {/* SUBMIT BUTTON */}
         <div style={{ marginTop: '30px', paddingTop: '30px', borderTop: '2px solid #f0f0f0' }}>
             <button type="submit" className="btn-primary" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', fontSize: '1.2rem', padding: '15px' }}>
                 <ChefHat size={24} /> Publish Recipe

@@ -5,12 +5,32 @@ const getHeaders = (token) => ({
   ...(token ? { 'Authorization': `Bearer ${token}` } : {})
 });
 
+// Fonction utilitaire pour décoder le JWT et obtenir l'ID de l'utilisateur
+const getUserIdFromToken = (token) => {
+  if (!token) return null;
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(window.atob(base64));
+    return payload.userId;
+  } catch (e) {
+    return null;
+  }
+};
+
 export const recipeService = {
   getAll: async (token) => {
     const res = await fetch(`${API_BASE_URL}/recipes`, { headers: getHeaders(token) });
     if (!res.ok) throw new Error("Failed to fetch recipes");
     const data = await res.json();
-    return Array.isArray(data) ? data : (data.recipes || []);
+    const recipesArray = Array.isArray(data) ? data : (data.recipes || []);
+    const currentUserId = getUserIdFromToken(token);
+
+    return recipesArray.filter(recipe => {
+      if (recipe.privacy === false || recipe.privacy === undefined) return true;      
+      if (currentUserId && recipe.userId === currentUserId) return true; // pour recettes privées
+      return false;
+    });
   },
   
   create: async (token, recipeData) => {
@@ -32,6 +52,12 @@ export const recipeService = {
     return res.json();
   },
 
+  getUserRecipes: async (token, userId) => {
+    const allRecipes = await recipeService.getAll(token);
+    const recipesArray = Array.isArray(allRecipes) ? allRecipes : [];
+    return recipesArray.filter(r => r.userId === userId);
+  },
+
   toggleFavorite: async (token, recipeId, isAdding) => {
     const url = isAdding 
       ? `${API_BASE_URL}/users/me/favorites` 
@@ -48,7 +74,18 @@ export const recipeService = {
   getById: async (token, id) => {
     const res = await fetch(`${API_BASE_URL}/recipes/${id}`, { headers: getHeaders(token) });
     if (!res.ok) throw new Error("Recipe not found");
-    return res.json();
+    const recipe = await res.json();
+
+    // Protection supplémentaire pour l'accès direct par ID
+    const currentUserId = getUserIdFromToken(token);
+    const isPublic = recipe.privacy === false || recipe.privacy === undefined;
+    const isOwner = currentUserId && recipe.userId === currentUserId;
+
+    if (!isPublic && !isOwner) {
+        throw new Error("Unauthorized: This recipe is private.");
+    }
+
+    return recipe;
   },
 
   update: async (token, id, recipeData) => {
@@ -174,5 +211,46 @@ export const shoppingListService = {
     });
     if (!response.ok) throw new Error('Failed to clear the shopping list');
     return response.json();
+  },
+  
+  updateFromCalendar: async (token, ingredients) => {
+    const response = await fetch(`${API_BASE_URL}/planner/sync`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ ingredients })
+    });
+    if (!response.ok) throw new Error('Failed to sync shopping list');
+    return response.json();
+  },
+};
+
+export const calendarService = {
+  // Sauvegarder un calendrier complet (jours + recettes)
+  save: async (token, calendarData) => {
+    const response = await fetch(`${API_BASE_URL}/planner/`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify(calendarData)
+    });
+    if (!response.ok) throw new Error('Failed to save calendar');
+    return response.json();
+  },
+
+  // Récupérer les calendriers favoris/sauvegardés
+  getSavedCalendars: async (token) => {
+    const response = await fetch(`${API_BASE_URL}/planner/`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch calendars');
+    return response.json();
+  },
+
+  deleteSavedCalendar: async (token, id) => {
+    const response = await fetch(`${API_BASE_URL}/planner/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to delete calendar');
+    return true;
   }
 };

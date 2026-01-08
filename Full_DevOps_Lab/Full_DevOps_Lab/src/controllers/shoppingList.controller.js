@@ -87,6 +87,31 @@ const clearList = async (req, res) => {
     }
 };
 
+export async function syncIngredients(req, res) {
+    try {
+        const { ingredients } = req.body; // Reçoit le tableau d'ingrédients
+        const userId = req.userId;
+
+        if (!ingredients || !Array.isArray(ingredients)) {
+            return res.status(400).json({ error: "Ingredients array is required" });
+        }
+
+        for (const ing of ingredients) {
+            await shoppingService.addItem(userId, {
+                name: ing.name,
+                quantity: ing.quantity || 1,      
+                unit: ing.unit || "g",     
+                category: ing.category || "OTHER"
+            });
+        }
+
+        res.status(200).json({ message: "Ingredients synced successfully" });
+    } catch (err) {
+        console.error("Sync Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+}
+
 export default {
   getShoppingList,
   addItem,

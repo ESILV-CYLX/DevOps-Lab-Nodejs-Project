@@ -1,14 +1,12 @@
 import express from "express";
-// Import the new functions here
 import { 
     getUserById, 
     getAllUsers, 
     updateUser, 
     updatePassword,
-    toggleFavorite, // <--- NEW
-    getFavorites    // <--- NEW
+    toggleFavorite,
+    getFavorites
 } from "../../controllers/users.controller.js";
-
 import authenticateToken from "../../middleware/auth.middleware.js";
 
 const router = express.Router();

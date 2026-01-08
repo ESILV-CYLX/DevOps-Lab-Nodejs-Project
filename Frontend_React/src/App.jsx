@@ -14,7 +14,7 @@ import SavedRecipes from './pages/SavedRecipes';
 import ModifyRecipe from './pages/ModifyRecipe';
 import ShoppingList from './pages/ShoppingList';
 import AddIngredient from './pages/AddIngredient';
-import Calendar from './pages/Calendar';
+import CalendarPage from './pages/Calendar';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -128,7 +128,7 @@ function App() {
           } />
           
           <Route path="/planner" element={
-            <Layout><div className="scrollable-page"><Calendar /></div></Layout>} />
+            <Layout><div className="scrollable-page"><CalendarPage /></div></Layout>} />
         </Routes>
       </Router>
     </AuthProvider>

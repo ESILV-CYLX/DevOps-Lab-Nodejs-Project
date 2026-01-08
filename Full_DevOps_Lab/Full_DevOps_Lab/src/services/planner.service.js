@@ -13,10 +13,10 @@ export async function createMealPlan(userId, mealPlanData) {
     const newMealPlan = new MealPlanModel({
         mealPlanId: newMealPlanId,
         userId,
-        weekStartDate: mealPlanData.weekStartDate,
-        weekEndDate: mealPlanData.weekEndDate,
-        recipes: mealPlanData.recipes || [],
-        mealSlots: mealPlanData.mealSlots || [],
+        weekStartDate: mealPlanData.weekStartDate || new Date(),
+        weekEndDate: mealPlanData.weekEndDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        name: mealPlanData.name || "My MealPlan",
+        content: mealPlanData.content,
         state: mealPlanData.state ?? true,
         privacy: mealPlanData.privacy ?? false,
     });
@@ -31,4 +31,15 @@ export async function updateMealPlan(userId, mealPlanId, updateData) {
 
     Object.assign(mealPlan, updateData);
     return mealPlan.save();
+}
+
+// Deletes a saved mealplan
+export async function deleteMealPlan(userId, id) {
+    const result = await MealPlanModel.deleteOne({ _id: id, userId });
+    
+    if (result.deletedCount === 0) {
+        throw new Error("MealPlan not found or unauthorized");
+    }
+    
+    return { message: "MealPlan deleted successfully" };
 }

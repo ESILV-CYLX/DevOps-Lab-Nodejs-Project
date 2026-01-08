@@ -20,7 +20,7 @@ export const getRecipeMetadata = async (req, res) => {
 // GET ALL RECIPES
 export const getRecipes = async (req, res) => {
   try {
-    const recipes = await Recipe.find({ privacy: false });
+    const recipes = await Recipe.find();
     res.json(recipes);
   } catch (err) {
     res.status(500).json({ message: "Error fetching recipes", error: err.message });
@@ -50,15 +50,15 @@ export const createRecipe = async (req, res) => {
     // Generate IDs for ingredients before creating the object
     const ingredientsWithIds = (req.body.ingredients || []).map(ing => ({
         ...ing,
-        ingredientId: Math.floor(Math.random() * 100000) // Generate ID
+        ingredientId: Math.floor(Math.random() * 100000)
     }));
 
     const newRecipe = new Recipe({
       ...req.body,
       recipeId: recipeId,
       userId: req.userId,
-      ingredients: ingredientsWithIds, // Use the version with IDs
-      
+      ingredients: ingredientsWithIds,
+      privacy: req.body.privacy || false,
       prepTime: parseInt(req.body.prepTime) || 0,
       cookTime: parseInt(req.body.cookTime) || 0,
       servings: parseInt(req.body.servings) || 1,
@@ -73,7 +73,7 @@ export const createRecipe = async (req, res) => {
   }
 };
 
-// UPDATE RECIPE (FIXED INGREDIENT IDs)
+// UPDATE RECIPE
 export const updateRecipe = async (req, res) => {
   try {
     const recipeId = parseInt(req.params.id);
@@ -88,7 +88,7 @@ export const updateRecipe = async (req, res) => {
       return res.status(403).json({ message: "You can only modify your own recipes" });
     }
 
-    const { title, prepTime, cookTime, difficulty, flavor, servings, cuisineType, ingredients, instructions, description, image } = req.body;
+    const { title, prepTime, cookTime, difficulty, flavor, servings, cuisineType, ingredients, instructions, description, image, privacy } = req.body;
 
     if (title) recipe.title = title;
     if (prepTime) recipe.prepTime = prepTime;
@@ -100,15 +100,14 @@ export const updateRecipe = async (req, res) => {
     if (description) recipe.description = description;
     if (image) recipe.image = image;
     if (instructions) recipe.instructions = instructions;
-    
-    // --- THE FIX IS HERE ---
+    if (privacy) recipe.privacy = privacy;
+
     if (ingredients && Array.isArray(ingredients)) {
         recipe.ingredients = ingredients.map(ing => ({
             name: ing.name,
             quantity: ing.quantity,
             unit: ing.unit,
-            // If it has an ID, keep it. If not, generate a new one.
-            ingredientId: ing.ingredientId || Math.floor(Math.random() * 100000) 
+            ingredientId: ing.ingredientId || Math.floor(Math.random() * 100000) // Generate ID if missing
         }));
     }
 

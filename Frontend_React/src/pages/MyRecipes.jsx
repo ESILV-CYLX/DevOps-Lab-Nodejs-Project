@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Clock, Heart, ChefHat } from 'lucide-react';
+import { Clock, Heart, ChefHat, Lock, Globe } from 'lucide-react';
 import { recipeService } from '../services/api';
 
 export default function MyRecipes() {
@@ -18,10 +18,7 @@ export default function MyRecipes() {
         recipeService.getFavorites(token)
       ]);
 
-      // Filtrer les recettes de l'utilisateur
       setRecipes(allRecipes.filter(r => r.userId === user.userId));
-      
-      // Mapper les IDs des favoris
       setLikedRecipeIds(new Set(favorites.map(f => f.recipeId)));
     } catch (err) {
       console.error(err);
@@ -37,8 +34,6 @@ const toggleLike = async (e, recipeId) => {
   e.stopPropagation();
 
   const isCurrentlyLiked = likedRecipeIds.has(recipeId);
-  
-  // Optimistic Update
   const newSet = new Set(likedRecipeIds);
   isCurrentlyLiked ? newSet.delete(recipeId) : newSet.add(recipeId);
   setLikedRecipeIds(newSet);
@@ -54,9 +49,14 @@ const toggleLike = async (e, recipeId) => {
 if (loading) return <div style={{padding:'40px'}}>Loading your recipes...</div>;
 
 return (
-  <div className="page-content">
+  <div className="page-content"  style={{maxWidth: '800px', margin: '0 auto' }}>
     <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px'}}>
-      <h1 style={{ margin: 0, fontSize: '2rem' }}>My Recipes</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div style={{ background: '#e3f2fd', padding: '12px', borderRadius: '12px' }}>
+          <ChefHat size={32} color="#1976d2" />
+        </div>
+        <h1 style={{ fontSize: '2rem', margin: 0 }}>My Recipes</h1>
+      </div>
       <Link to="/create-recipe" className="btn-primary" style={{textDecoration: 'none'}}>+ Create Recipe</Link>
     </div>
     
@@ -78,6 +78,23 @@ return (
                   
                   <div style={{ height: '180px', overflow: 'hidden', position: 'relative' }}>
                       <img src={recipe.image} alt={recipe.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div style={{
+                        position: 'absolute',
+                        top: '10px',
+                        left: '10px',
+                        background: 'rgba(0,0,0,0.6)',
+                        color: 'white',
+                        padding: '5px 10px',
+                        borderRadius: '20px',
+                        fontSize: '0.75rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        backdropFilter: 'blur(4px)'
+                      }}>
+                        {recipe.privacy ? <Lock size={12} /> : <Globe size={12} />}
+                        {recipe.privacy ? 'Private' : 'Public'}
+                      </div>
                       
                       <button 
                           onClick={(e) => toggleLike(e, recipe.recipeId)}
