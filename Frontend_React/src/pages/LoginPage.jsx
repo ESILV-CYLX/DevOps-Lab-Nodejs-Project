@@ -32,7 +32,7 @@ export default function LoginPage() {
         navigate('/');
       } else {
         await authService.signup(formData);
-        setMessage('Compte créé avec succès ! Connectez-vous.');
+        setMessage('Account created successfully! Please log in.');
         setIsLoginMode(true);
         setFormData(prev => ({ ...prev, password: '' }));
       }
@@ -46,15 +46,15 @@ export default function LoginPage() {
       <div className="login-card">
         <h1 style={{margin: '0 0 10px 0'}}>Smart Meal</h1>
         <p style={{marginBottom: '20px', color: '#666'}}>
-          {isLoginMode ? 'Connectez-vous à votre espace' : 'Rejoignez la communauté'}
+          {isLoginMode ? 'Log in to your account' : 'Join the community'}
         </p>
         
         {message && (
           <div style={{
-            color: message.includes('succès') ? 'green' : 'red', 
+            color: message.includes('success') ? 'green' : 'red', 
             marginBottom: '15px', 
             padding: '10px',
-            background: message.includes('succès') ? '#e6fffa' : '#fff5f5',
+            background: message.includes('success') ? '#e6fffa' : '#fff5f5',
             borderRadius: '5px'
           }}>
             {message}
@@ -66,19 +66,19 @@ export default function LoginPage() {
           <input
             type="text"
             name="username" 
-            placeholder="Nom d'utilisateur"
+            placeholder="Username"
             value={formData.username}
             onChange={handleChange}
             className="login-input"
             required
           />
 
-          {/* Champ Email (Visible SEULEMENT si on s'inscrit) */}
+          {/* Champ Email (Visible SEULEMENT si inscrit) */}
           {!isLoginMode && (
             <input
               type="email"
               name="email" 
-              placeholder="Votre Email (ex: moi@test.com)"
+              placeholder="Your Email (e.g., me@test.com)"
               value={formData.email}
               onChange={handleChange}
               className="login-input"
@@ -89,7 +89,7 @@ export default function LoginPage() {
           <input 
             type="password" 
             name="password"
-            placeholder="Mot de passe" 
+            placeholder="Password" 
             value={formData.password}
             onChange={handleChange}
             className="login-input"
@@ -97,17 +97,17 @@ export default function LoginPage() {
           />
           
           <button type="submit" className="btn-primary" style={{width: '100%', marginBottom: '15px'}}>
-            {isLoginMode ? 'Se connecter' : "S'inscrire"}
+            {isLoginMode ? 'Log in' : "Sign up"}
           </button>
         </form>
 
         <div style={{fontSize: '0.9rem', color: '#555'}}>
-          {isLoginMode ? "Pas encore de compte ? " : "Déjà un compte ? "}
+          {isLoginMode ? "Don't have an account yet? " : "Already have an account? "}
           <span 
             onClick={() => { setIsLoginMode(!isLoginMode); setMessage(''); }} 
             style={{color: 'black', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline'}}
           >
-            {isLoginMode ? "Créer un compte" : "Se connecter"}
+            {isLoginMode ? "Create an account" : "Log in"}
           </span>
         </div>
       </div>
