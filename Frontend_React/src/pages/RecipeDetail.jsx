@@ -9,6 +9,8 @@ export default function RecipeDetail() {
   const navigate = useNavigate();
   const { token, user } = useAuth();
   
+  const isLoggedIn = !!token && !!user;
+
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,7 +25,7 @@ export default function RecipeDetail() {
         const data = await recipeService.getById(token, id);
         setRecipe(data);
 
-        if (token) {
+        if (isLoggedIn) {
           const favorites = await recipeService.getFavorites(token);
           const isFav = favorites.some(f => f.recipeId === data.recipeId);
           setIsLiked(isFav);
@@ -35,10 +37,10 @@ export default function RecipeDetail() {
       }
     };
     fetchRecipe();
-  }, [id, token]);
+  }, [id, token, isLoggedIn]);
 
   const toggleLike = async () => {
-      if (!user) return;
+      if (!isLoggedIn) return;
       
       const previousState = isLiked;
       setIsLiked(!previousState); 
@@ -52,7 +54,7 @@ export default function RecipeDetail() {
   };
 
   const addAllToShoppingList = async () => {
-    if (!recipe.ingredients || recipe.ingredients.length === 0) return;
+    if (!isLoggedIn || !recipe.ingredients || recipe.ingredients.length === 0) return;
     
     setAddingAll(true);
     try {
@@ -66,8 +68,6 @@ export default function RecipeDetail() {
       );
 
       await Promise.all(promises);
-      
-      // Feedback visuel
       setAllAdded(true);
 
       const allIndices = {};
@@ -86,6 +86,7 @@ export default function RecipeDetail() {
   };
 
   const addToShoppingList = async (ingredient, index) => {
+    if (!isLoggedIn) return;
     try {
         await shoppingListService.addItem(token, {
         name: ingredient.name,
@@ -105,7 +106,7 @@ export default function RecipeDetail() {
   if (error) return <div style={{padding: '40px', color: 'red'}}>Error: {error}</div>;
   if (!recipe) return null;
 
-  const isOwner = user && recipe && user.userId === recipe.userId;
+  const isOwner = isLoggedIn && recipe && user.userId === recipe.userId;
 
   return (
     <div className="page-content-limited">
@@ -116,34 +117,22 @@ export default function RecipeDetail() {
       <div style={{ borderRadius: '16px', overflow: 'hidden', height: '350px', marginBottom: '30px', position: 'relative' }}>
          <img src={recipe.image} alt={recipe.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
          
-         <button 
-            onClick={toggleLike}
-            style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                background: 'white',
-                border: 'none',
-                outline: 'none',
-                display: 'grid',
-                placeItems: 'center',
-                cursor: 'pointer',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
-                padding: 0,
-                zIndex: 10
-            }}
-         >
-             <Heart 
-                 size={22} 
-                 color={isLiked ? "#ff4d4d" : "#000000"} 
-                 fill={isLiked ? "#ff4d4d" : "none"} 
-                 strokeWidth={2}
-             />
-         </button>
-
+         {isLoggedIn && (
+          <button 
+              onClick={toggleLike}
+              style={{ position: 'absolute', top: '20px', right: '20px', width: '40px', height: '40px',
+                  borderRadius: '50%', background: 'white', border: 'none', outline: 'none', display: 'grid',
+                  placeItems: 'center', cursor: 'pointer',boxShadow: '0 2px 10px rgba(0,0,0,0.3)', padding: 0, zIndex: 10
+              }}
+          >
+              <Heart 
+                  size={22} 
+                  color={isLiked ? "#ff4d4d" : "#000000"} 
+                  fill={isLiked ? "#ff4d4d" : "none"} 
+                  strokeWidth={2}
+              />
+          </button>
+         )}
          <div style={{position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, black)', padding: '20px', color: 'white'}}>
              <h1 style={{margin: 0, fontSize: '2.5rem'}}>{recipe.title}</h1>
          </div>
@@ -169,30 +158,32 @@ export default function RecipeDetail() {
             marginBottom: '15px' 
           }}>
             <h3 style={{ margin: 0 }}>Ingredients</h3>
-            <button
-              onClick={addAllToShoppingList}
-              disabled={addingAll || allAdded}
-              style={{
-                background: allAdded ? '#2e7d32' : 'black',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '6px 12px',
-                fontSize: '0.75rem',
-                fontWeight: 'bold',
-                cursor: addingAll ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              {allAdded ? (
-                <><CheckCircle size={14} /> Added!</>
-              ) : (
-                <><ShoppingBag size={14} /> {addingAll ? 'Adding...' : 'Add all'}</>
-              )}
-            </button>
+            {isLoggedIn && (
+              <button
+                onClick={addAllToShoppingList}
+                disabled={addingAll || allAdded}
+                style={{
+                  background: allAdded ? '#2e7d32' : 'black',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold',
+                  cursor: addingAll ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                {allAdded ? (
+                  <><CheckCircle size={14} /> Added!</>
+                ) : (
+                  <><ShoppingBag size={14} /> {addingAll ? 'Adding...' : 'Add all'}</>
+                )}
+              </button>
+            )}
           </div>
 
           <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -205,27 +196,29 @@ export default function RecipeDetail() {
                         </span>
                     </div>
 
-                    <button 
-                        onClick={() => addToShoppingList(ing, index)}
-                        style={{
-                            background: addedIngredients[index] ? '#e8f5e9' : 'white',
-                            color: addedIngredients[index] ? '#2e7d32' : '#1976d2',
-                            border: addedIngredients[index] ? '1px solid #a5d6a7' : '1px solid #bbdefb',
-                            borderRadius: '8px',
-                            padding: '8px 12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            cursor: 'pointer',
-                            fontWeight: '600',
-                            fontSize: '0.85rem',
-                            transition: 'all 0.2s',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                            outline: 'none'
-                        }}
-                    >
-                        {addedIngredients[index] ? <><Check size={16} /> Added</> : <><ShoppingBag size={16} /> + Add</>}
-                    </button>
+                    {isLoggedIn && (
+                      <button 
+                          onClick={() => addToShoppingList(ing, index)}
+                          style={{
+                              background: addedIngredients[index] ? '#e8f5e9' : 'white',
+                              color: addedIngredients[index] ? '#2e7d32' : '#1976d2',
+                              border: addedIngredients[index] ? '1px solid #a5d6a7' : '1px solid #bbdefb',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              cursor: 'pointer',
+                              fontWeight: '600',
+                              fontSize: '0.85rem',
+                              transition: 'all 0.2s',
+                              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                              outline: 'none'
+                          }}
+                      >
+                          {addedIngredients[index] ? <><Check size={16} /> Added</> : <><ShoppingBag size={16} /> + Add</>}
+                      </button>
+                    )}
                 </li>
             ))}
             {(!recipe.ingredients || recipe.ingredients.length === 0) && <p>No ingredients listed.</p>}

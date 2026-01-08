@@ -5,11 +5,11 @@ import RecipeCard from '../components/RecipeCard';
 import { recipeService } from '../services/api';
 
 export default function SavedRecipes() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const likedRecipeIds = new Set(recipes.map(r => r.recipeId));
+  const isLoggedIn = !!token && !!user;
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -63,6 +63,7 @@ export default function SavedRecipes() {
               recipe={recipe} 
               likedRecipeIds={likedRecipeIds}
               onToggleLike={handleToggleLike}
+              isLoggedIn={isLoggedIn}
             />
           ))}
         </div>

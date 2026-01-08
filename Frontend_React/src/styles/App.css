@@ -11,7 +11,7 @@ html, body {
   padding: 0;
   height: 100%;
   width: 100%;
-  overflow: hidden; /* Kills the browser's default scrollbar */
+  overflow: hidden;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: var(--bg-color);
   color: #333;
@@ -20,7 +20,7 @@ html, body {
 /* Holds Sidebar + Content side-by-side */
 .app-container {
   display: flex;
-  height: 100vh; /* Force full viewport height */
+  height: 100vh;
   width: 100vw;
   overflow: hidden;
 }
@@ -34,7 +34,7 @@ html, body {
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
-  flex-shrink: 0; /* Prevents sidebar from being squashed */
+  flex-shrink: 0;
   z-index: 100;
 }
 
@@ -78,20 +78,20 @@ html, body {
 }
 
 .main-content {
-  flex: 1; /* Take all remaining width */
+  flex: 1;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* This acts as a wall: nothing inside can stretch the window */
+  overflow: hidden;
   position: relative;
 }
 
 .dashboard-container {
   flex: 1;
   height: 100%;
-  overflow-y: auto;  /* Vertical scrolling enabled */
-  overflow-x: hidden; /* No horizontal scrolling for the page itself */
-  padding: 30px 60px; /* Adjusted padding */
+  overflow-y: auto; 
+  overflow-x: hidden;
+  padding: 30px 60px;
   box-sizing: border-box;
   min-width: 0; 
   width: 100%;
@@ -100,7 +100,7 @@ html, body {
 .horizontal-scroll {
   display: flex;
   gap: 25px;
-  overflow-x: auto;   /* Enable horizontal scroll */
+  overflow-x: auto; 
   width: 100%;        
   padding-bottom: 20px;
   padding-left: 5px;
@@ -134,7 +134,7 @@ html, body {
   cursor: pointer;
   font-weight: bold;
   font-size: 1rem;
-  white-space: nowrap; /* Prevents text from wrapping */
+  white-space: nowrap;
 }
 
 .section-title {
@@ -144,7 +144,7 @@ html, body {
 }
 
 .recipe-card {
-  width: 260px; /* Fixed width */
+  width: 260px;
   min-width: 260px;
   background: white;
   border-radius: 12px;
@@ -256,9 +256,9 @@ html, body {
 }
 
 .scrollable-page {
-  height: 100%;        /* Fill the main-content frame */
-  overflow-y: auto;    /* Enable vertical scrolling */
-  padding: 40px;       /* proper spacing from edges */
+  height: 100%;        
+  overflow-y: auto;  
+  padding: 40px;
   box-sizing: border-box;
   width: 100%;
 }

@@ -40,6 +40,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const isLoggedIn = !!token && !!user;
+
   const dashboardSections = [
     { id: "occidental", title: "Occidental", filter: (r) => ["American", "British", "French", "German", "Italian", "Spanish"].includes(r.cuisineType) },
     { id: "mediterranean", title: "Mediterranean", filter: (r) => ["Greek", "Mediterranean"].includes(r.cuisineType) },
@@ -54,12 +56,12 @@ export default function Dashboard() {
       try {
         const [recipesData, favoritesData] = await Promise.all([ //chargement en parallèle
           recipeService.getAll(token),
-          token ? recipeService.getFavorites(token) : Promise.resolve([])
+          isLoggedIn ? recipeService.getFavorites(token) : Promise.resolve([])
         ]);
 
         setRecipes(recipesData);
 
-        if (token && Array.isArray(favoritesData)) {
+        if (isLoggedIn && Array.isArray(favoritesData)) {
           const ids = favoritesData.map(f => f.recipeId);
           setLikedRecipeIds(new Set(ids));
         }
@@ -71,7 +73,7 @@ export default function Dashboard() {
     };
 
     fetchData();
-  }, [token]);
+  }, [token, isLoggedIn]);
 
   if (loading) return <div style={{padding:'40px'}}>Loading...</div>;
 
@@ -88,18 +90,23 @@ export default function Dashboard() {
           <h1 style={{margin: '0 0 5px 0', fontSize: '2.5rem', whiteSpace: 'nowrap'}}>
             Welcome, {user?.username || 'Chef'}
           </h1>
-          <p style={{margin: 0, color: '#666'}}>What are you cooking today?</p>
+          <p style={{margin: 0, color: '#666'}}>
+            {isLoggedIn ? "What are you cooking today?" : "Explore our public recipes or log in to get cooking!"}
+          </p>
         </div>
         
-        <div style={{display: 'flex', gap: '15px'}}>
-            <button className="btn-primary" onClick={() => navigate('/add-ingredient')} style={{background: 'white', color: 'black', border: '1px solid #ddd'}}>
-                + Add Ingredient
-            </button>
-            <button className="btn-primary" onClick={() => navigate('/create-recipe')}>
-                + Create Recipe
-            </button>
-        </div>
+        {isLoggedIn && (
+          <div style={{display: 'flex', gap: '15px'}}>
+              <button className="btn-primary" onClick={() => navigate('/add-ingredient')} style={{background: 'white', color: 'black', border: '1px solid #ddd'}}>
+                  + Add Ingredient
+              </button>
+              <button className="btn-primary" onClick={() => navigate('/create-recipe')}>
+                  + Create Recipe
+              </button>
+          </div>
+        )}
       </div>
+        
 
       <div className="search-bar" style={{marginBottom: '40px', width: '100%'}}>
           <Search size={20} color="#666" />
@@ -129,7 +136,9 @@ export default function Dashboard() {
                 key={recipe.recipeId} 
                 recipe={recipe} 
                 likedRecipeIds={likedRecipeIds}
+                isLoggedIn={isLoggedIn}
                 onToggleLike={(recipeId, liked) => {
+                  if (!isLoggedIn) return;
                   setLikedRecipeIds(prev => {
                     const newSet = new Set(prev);
                     if (liked) newSet.add(recipeId);

@@ -1,7 +1,7 @@
 // src/App.jsx
-import React from 'react';
+import React, { use } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
-import { Home, Search, Calendar, List, Heart, Settings, PlusCircle, LogOut, ChefHat } from 'lucide-react';
+import { Home, Search, Calendar, List, Heart, Settings, PlusCircle, LogOut, LogIn, ChefHat } from 'lucide-react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Dashboard from './pages/Dashboard';
 import LoginPage from './pages/LoginPage';
@@ -18,12 +18,16 @@ import CalendarPage from './pages/Calendar';
 
 const Sidebar = () => {
   const location = useLocation();
-  const { logout } = useAuth(); 
+  const { user, logout } = useAuth(); 
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleAuthAction = () => {
+    if (user) {
+      logout();
+      navigate('/');
+    } else {
+      navigate('/login');
+    }
   };
 
   const isActive = (path) => location.pathname === path ? 'active' : '';
@@ -37,30 +41,38 @@ const Sidebar = () => {
         <Link to="/" className={`nav-link ${isActive('/')}`}>
           <Home size={20} /> Home
         </Link>
-        <Link to="/saved" className={`nav-link ${isActive('/saved')}`}>
-          <Heart size={20} /> Saved Recipes
-        </Link>
-      </div>
-
-      <div className="menu-group">
-        <div className="menu-title">Your Space</div>
-        <Link to="/list" className={`nav-link ${isActive('/list')}`}>
-          <List size={20} /> Shopping List
-        </Link>
-        <Link to="/my-recipes" className={`nav-link ${isActive('/my-recipes')}`}>
-          <ChefHat size={20} /> My Recipes
-        </Link>
-        <Link to="/planner" className={`nav-link ${isActive('/planner')}`}>
-          <Calendar size={20} /> Calendar
-        </Link>
+        {user && (
+          <Link to="/saved" className={`nav-link ${isActive('/saved')}`}>
+            <Heart size={20} /> Saved Recipes
+          </Link>
+        )}
       </div>
       
+      {/* YOUR SPACE SECTION */}
+      {user && (
+        <div className="menu-group">
+          <div className="menu-title">Your Space</div>
+          <Link to="/list" className={`nav-link ${isActive('/list')}`}>
+            <List size={20} /> Shopping List
+          </Link>
+          <Link to="/my-recipes" className={`nav-link ${isActive('/my-recipes')}`}>
+            <ChefHat size={20} /> My Recipes
+          </Link>
+          <Link to="/planner" className={`nav-link ${isActive('/planner')}`}>
+            <Calendar size={20} /> Calendar
+          </Link>
+        </div>
+      )}
+      
       <div style={{marginTop: 'auto'}}>
-        <Link to="/settings" className={`nav-link ${isActive('/settings')}`}>
-            <Settings size={20} /> Settings
-        </Link>
-        <div onClick={handleLogout} className="nav-link" style={{cursor: 'pointer', color: '#d9534f'}}>
-            <LogOut size={20} /> Logout
+        {user && (
+          <Link to="/settings" className={`nav-link ${isActive('/settings')}`}>
+              <Settings size={20} /> Settings
+          </Link>
+        )}
+        <div onClick={handleAuthAction} className="nav-link" style={{cursor: 'pointer', color: user ? '#d9534f' : '#28a745'}}>
+            {user ? <LogOut size={20} /> : <LogIn size={20} />}
+            {user ? ' Logout' : ' Log In for more features...'}
         </div>
       </div>
     </nav>
@@ -68,12 +80,6 @@ const Sidebar = () => {
 };
 
 const Layout = ({ children }) => {
-  const { user, token } = useAuth();
-  
-  if (!user || !token) {
-    return <Navigate to="/login" />;
-  }
-
   return (
     <div className="app-container">
       <Sidebar />
@@ -84,6 +90,14 @@ const Layout = ({ children }) => {
   );
 };
 
+const PrivateRoute = ({ children }) => {
+  const { user, token } = useAuth();
+  if (!user || !token) {
+    return <Navigate to="/login" />;
+  }
+  return children;
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -91,44 +105,46 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           
-          {/* Dashboard manages its own scroll, so no wrapper needed here */}
-          <Route path="/" element={<Layout><Dashboard /></Layout>} />
+          {/* Public Routes */}
+          <Route path="/" element={
+            <Layout><Dashboard /></Layout>
+          } />
 
-          {/* Wrap other pages so they scroll and have padding */}
           <Route path="/recipe/:id" element={
             <Layout><div className="scrollable-page"><RecipeDetail /></div></Layout>
           } />
           
+          {/* Private Routes */}
           <Route path="/settings" element={
-            <Layout><div className="scrollable-page"><SettingsPage /></div></Layout>
+            <PrivateRoute><Layout><div className="scrollable-page"><SettingsPage /></div></Layout></PrivateRoute>
           } />
 
           <Route path="/create-recipe" element={
-            <Layout><div className="scrollable-page"><CreateRecipe /></div></Layout>
+            <PrivateRoute><Layout><div className="scrollable-page"><CreateRecipe /></div></Layout></PrivateRoute>
           } />
 
           <Route path="/modify-recipe/:id" element={
-            <Layout><div className="scrollable-page"><ModifyRecipe /></div></Layout>
+            <PrivateRoute><Layout><div className="scrollable-page"><ModifyRecipe /></div></Layout></PrivateRoute>
           } />
           
           <Route path="/my-recipes" element={
-            <Layout><div className="scrollable-page"><MyRecipes /></div></Layout>
+            <PrivateRoute><Layout><div className="scrollable-page"><MyRecipes /></div></Layout></PrivateRoute>
           } />
 
           <Route path="/saved" element={
-            <Layout><div className="scrollable-page"><SavedRecipes /></div></Layout>
+            <PrivateRoute><Layout><div className="scrollable-page"><SavedRecipes /></div></Layout></PrivateRoute>
           } />
 
           <Route path="/list" element={
-            <Layout><div className="scrollable-page"><ShoppingList /></div></Layout>
+            <PrivateRoute><Layout><div className="scrollable-page"><ShoppingList /></div></Layout></PrivateRoute>
           } />
 
           <Route path="/add-ingredient" element={
-              <Layout><div className="page-content"><AddIngredient /></div></Layout>
+              <PrivateRoute><Layout><div className="page-content"><AddIngredient /></div></Layout></PrivateRoute>
           } />
           
           <Route path="/planner" element={
-            <Layout><div className="scrollable-page"><CalendarPage /></div></Layout>} />
+            <PrivateRoute><Layout><div className="scrollable-page"><CalendarPage /></div></Layout></PrivateRoute>} />
         </Routes>
       </Router>
     </AuthProvider>

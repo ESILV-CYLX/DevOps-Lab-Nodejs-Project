@@ -1,15 +1,16 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Clock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-const RecipeCard = ({ recipe, likedRecipeIds, onToggleLike }) => {
+const RecipeCard = ({ recipe, likedRecipeIds, onToggleLike, isLoggedIn }) => {
   const { token, user } = useAuth();
-  const isLiked = likedRecipeIds.has(recipe.recipeId);
+  const isLiked = likedRecipeIds?.has(recipe.recipeId);
 
   const toggleLike = async (e) => {
     e.preventDefault(); 
     e.stopPropagation();
-    if (!user) return; 
+    if (!user || !isLoggedIn) return; 
 
     const newLiked = !isLiked;
     onToggleLike?.(recipe.recipeId, newLiked);
@@ -52,23 +53,25 @@ const RecipeCard = ({ recipe, likedRecipeIds, onToggleLike }) => {
           <div style={{ height: '180px', overflow: 'hidden', position: 'relative' }}>
              <img src={recipe.image} alt={recipe.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
              
-             <button 
-                onClick={toggleLike}
-                style={{
-                  position: 'absolute', top: '10px', right: '10px',
-                  width: '36px', height: '36px', borderRadius: '50%',
-                  background: 'white', border: 'none', outline: 'none',
-                  display: 'grid', placeItems: 'center', cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)', padding: 0, zIndex: 10
-                }}
-             >
-                <Heart 
-                    size={20} 
-                    color={isLiked ? "#ff4d4d" : "#000000"} 
-                    fill={isLiked ? "#ff4d4d" : "none"} 
-                    strokeWidth={2}
-                />
-             </button>
+             {isLoggedIn && (
+              <button 
+                  onClick={toggleLike}
+                  style={{
+                    position: 'absolute', top: '10px', right: '10px',
+                    width: '36px', height: '36px', borderRadius: '50%',
+                    background: 'white', border: 'none', outline: 'none',
+                    display: 'grid', placeItems: 'center', cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)', padding: 0, zIndex: 10
+                  }}
+              >
+                  <Heart 
+                      size={20} 
+                      color={isLiked ? "#ff4d4d" : "#000000"} 
+                      fill={isLiked ? "#ff4d4d" : "none"} 
+                      strokeWidth={2}
+                  />
+              </button>
+            )}
           </div>
           
           <div style={{ padding: '15px' }}>
