@@ -128,14 +128,13 @@ export default function CalendarPage() {
     setCalendar(prev => {
       const newCal = { ...prev };
       
-      // 1. Retirer l'élément de sa position d'origine
+      // Retire d'abord l'élément de sa position d'origine
       const sourceList = [...newCal[sourceDay]];
       const [removedItem] = sourceList.splice(sourceIndex, 1);
       newCal[sourceDay] = sourceList;
 
-      // 2. Insérer l'élément à sa nouvelle position
+      // Insertion de l'élément
       const targetList = [...newCal[targetDay]];
-      // Si on lâche sur un item précis, on l'insère là, sinon à la fin
       const finalPosition = targetIndex !== null ? targetIndex : targetList.length;
       targetList.splice(finalPosition, 0, removedItem);
       
@@ -183,37 +182,29 @@ export default function CalendarPage() {
     html2pdf().set(opt).from(element).save();
   };
 
+  /***
+   * Update the shopping list based on the current calendar meals (verifies ingredients duplicates)
+   */
   const updateShoppingList = async () => {
     try {
-      // 1. Extraire tous les repas planifiés dans tous les jours
       const allMeals = Object.values(calendar).flat();
-     
       if (allMeals.length === 0) return alert("Calendar is empty: No meals/recipes found!");
 
-      // 2. Extraire et nettoyer les ingrédients
-      // On s'assure que recipe.ingredients existe et on aplatit la liste
       const allIngredients = allMeals.flatMap(item => {
         return (item.recipe.ingredients || []).map(ing => {
-        // Si c'est déjà un objet, on le passe tel quel, sinon on crée une structure minimale
         return typeof ing === 'object' ? ing : { name: ing, quantity: 1, unit: 'g', category: 'OTHER' };
       });
       });
-
-      console.log("Ingredients list to add to the shopping list:", allIngredients);
-
       if (allIngredients.length === 0) return alert("Calendar is empty: No ingredients found!");
+      //console.log("Ingredients list to add to the shopping list:", allIngredients);
 
-      // 3. Appel au service API
-      await shoppingListService.updateFromCalendar(token, allIngredients);
-      
+      await shoppingListService.updateFromCalendar(token, allIngredients);      
       alert("Shopping list updated successfully!");
     } catch (err) {
       console.error("Sync error :", err);
       alert("Failed to sync. Please try again.");
     }
   };
-
-  
 
   return (
     <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '20px' }}>
@@ -261,7 +252,6 @@ export default function CalendarPage() {
                   key={item.id || idx} 
                   draggable
                   onDragStart={(e) => onDragStart(e, day, idx)}
-                  // Permet de dropper spécifiquement sur cet item pour réordonner
                   onDrop={(e) => {
                     e.stopPropagation(); // Empêche le déclenchement du onDrop du parent (la colonne)
                     onDrop(e, day, idx);
@@ -383,17 +373,28 @@ export default function CalendarPage() {
             >
               {Object.values(MealType).map(t => <option key={t} value={t}>{t}</option>)}
             </select>
+
             <div style={{ flexGrow: 1, overflowY: 'auto' }}>
-              {recipes.map(r => (
-                <div key={r.recipeId} onClick={() => addMeal(showSelector.day, showSelector.mealType, r)} style={{ padding: '12px', border: '1px solid #eee', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-                  <img src={r.image || 'https://via.placeholder.com/50'} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '600' }}>{r.title}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#888' }}>{r.cuisineType}</div>
+              {recipes.length > 0 ? (
+                recipes.map(r => (
+                  <div key={r.recipeId} onClick={() => addMeal(showSelector.day, showSelector.mealType, r)} style={{ padding: '12px', border: '1px solid #eee', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                    <img src={r.image || 'https://via.placeholder.com/50'} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600' }}>{r.title}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#888' }}>{r.cuisineType}</div>
+                    </div>
+                    <Plus size={18} color="#007bff" />
                   </div>
-                  <Plus size={18} color="#007bff" />
+                ))
+              ) : (
+                <div style={{ textAlign: 'center', padding: '30px', color: '#666', background: '#f8f9fa', borderRadius: '12px', border: '1px dashed #ccc' }}>
+                    <ChefHat size={40} style={{ marginBottom: '10px', opacity: 0.5 }} />
+                    <p style={{ margin: 0, fontWeight: '500' }}>No recipes found.</p>
+                    <p style={{ margin: '5px 0 0', fontSize: '0.9rem', color: '#888' }}>
+                      Add recipes to favorite or create your own to start planning your week!
+                    </p>
                 </div>
-              ))}
+              )}
             </div>
             <button onClick={() => setShowSelector(null)} style={{ marginTop: '20px', width: '100%', padding: '12px', background: '#c9c6c6ff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Cancel</button>
           </div>
