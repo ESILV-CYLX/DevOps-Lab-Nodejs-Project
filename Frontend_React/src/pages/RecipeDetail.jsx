@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowLeft, Clock, ChefHat, User, Flame, Edit, ShoppingBag, CheckCircle, Check, Heart } from 'lucide-react'; 
+import { ArrowLeft, Clock, ChefHat, User, Flame, Edit, ShoppingBag, CheckCircle, Check, Heart, Leaf, Wheat, Milk } from 'lucide-react'; 
 import { recipeService, shoppingListService } from '../services/api';
 
 export default function RecipeDetail() {
@@ -143,6 +143,28 @@ export default function RecipeDetail() {
          <span style={{display: 'flex', alignItems: 'center'}}><Clock size={20} style={{marginRight: '8px'}}/> Prep: {recipe.prepTime} min</span>
          <span style={{display: 'flex', alignItems: 'center'}}><Flame size={20} style={{marginRight: '8px'}}/> Cook: {recipe.cookTime} min</span>
          <span style={{display: 'flex', alignItems: 'center'}}><User size={20} style={{marginRight: '8px'}}/> {recipe.servings} Servings</span>
+        {(recipe.isVegetarian || recipe.isGlutenFree || recipe.isLactoseFree) && (
+          <>
+            <span style={{color: '#eee'}}>|</span>
+            <div style={{ display: 'flex', gap: '15px' }}>
+              {recipe.isVegetarian && (
+                <span style={{ display: 'flex', alignItems: 'center', color: '#2e7d32', fontSize: '0.9rem', fontWeight: '600' }}>
+                  <Leaf size={18} style={{ marginRight: '4px' }} /> Vege
+                </span>
+              )}
+              {recipe.isGlutenFree && (
+                <span style={{ display: 'flex', alignItems: 'center', color: '#d97706', fontSize: '0.9rem', fontWeight: '600' }}>
+                  <Wheat size={18} style={{ marginRight: '4px' }} /> Gluten-Free
+                </span>
+              )}
+              {recipe.isLactoseFree && (
+                <span style={{ display: 'flex', alignItems: 'center', color: '#2563eb', fontSize: '0.9rem', fontWeight: '600' }}>
+                  <Milk size={18} style={{ marginRight: '4px' }} /> Lactose-Free
+                </span>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '50px' }}>

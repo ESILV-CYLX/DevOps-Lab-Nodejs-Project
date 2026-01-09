@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowLeft, Trash2, Save, Plus, X, UploadCloud, AlertCircle, Lock, Globe } from 'lucide-react';
+import { ArrowLeft, Trash2, Save, Plus, X, UploadCloud, AlertCircle, Lock, Globe, Leaf, Wheat, Milk } from 'lucide-react';
 import { recipeService, ingredientService } from '../services/api';
 
 export default function ModifyRecipe() {
@@ -29,6 +29,9 @@ export default function ModifyRecipe() {
     difficulty: 1,
     flavor: '',
     servings: 2,
+    isVegetarian: false,
+    isGlutenFree: false,
+    isLactoseFree: false,
     cuisineType: '',
     ingredients: [],
     description: '',
@@ -86,8 +89,11 @@ export default function ModifyRecipe() {
   // --- HANDLERS ---
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   const handleImageChange = (e) => {
@@ -243,6 +249,36 @@ export default function ModifyRecipe() {
         <div style={{marginBottom: '25px'}}>
             <label style={{fontWeight: 'bold', display:'block', marginBottom:'8px'}}>Recipe Title *</label>
             <input name="title" value={formData.title} onChange={handleChange} className="login-input" required placeholder="e.g., Grandma's Lasagna" />
+        </div>
+
+        {/* DIETARY PREFERENCES*/}
+        <div style={{ marginBottom: '30px', background: '#f0fdf4', padding: '20px', borderRadius: '12px', border: '1px solid #dcfce7' }}>
+            <label style={{fontWeight: 'bold', display:'block', marginBottom:'15px', color: '#166534'}}>Dietary Information</label>
+            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                <label style={styles.checkboxLabel}>
+                    <input type="checkbox" name="isVegetarian" checked={formData.isVegetarian} onChange={handleChange} style={styles.hiddenCheckbox} />
+                    <div style={{...styles.checkboxTile, borderColor: formData.isVegetarian ? '#22c55e' : '#ddd', background: formData.isVegetarian ? '#f0fdf4' : 'white'}}>
+                        <Leaf size={18} color={formData.isVegetarian ? '#22c55e' : '#666'} />
+                        <span style={{color: formData.isVegetarian ? '#166534' : '#666'}}>Vegetarian</span>
+                    </div>
+                </label>
+
+                <label style={styles.checkboxLabel}>
+                    <input type="checkbox" name="isGlutenFree" checked={formData.isGlutenFree} onChange={handleChange} style={styles.hiddenCheckbox} />
+                    <div style={{...styles.checkboxTile, borderColor: formData.isGlutenFree ? '#eab308' : '#ddd', background: formData.isGlutenFree ? '#fefce8' : 'white'}}>
+                        <Wheat size={18} color={formData.isGlutenFree ? '#eab308' : '#666'} />
+                        <span style={{color: formData.isGlutenFree ? '#854d0e' : '#666'}}>Gluten-Free</span>
+                    </div>
+                </label>
+
+                <label style={styles.checkboxLabel}>
+                    <input type="checkbox" name="isLactoseFree" checked={formData.isLactoseFree} onChange={handleChange} style={styles.hiddenCheckbox} />
+                    <div style={{...styles.checkboxTile, borderColor: formData.isLactoseFree ? '#3b82f6' : '#ddd', background: formData.isLactoseFree ? '#eff6ff' : 'white'}}>
+                        <Milk size={18} color={formData.isLactoseFree ? '#3b82f6' : '#666'} />
+                        <span style={{color: formData.isLactoseFree ? '#1e40af' : '#666'}}>Lactose-Free</span>
+                    </div>
+                </label>
+            </div>
         </div>
 
         {/* TIMES & SERVINGS */}
@@ -423,3 +459,25 @@ export default function ModifyRecipe() {
     </div>
   );
 }
+
+const styles = {
+    checkboxLabel: {
+        cursor: 'pointer',
+        flex: '1',
+        minWidth: '140px'
+    },
+    hiddenCheckbox: {
+        display: 'none'
+    },
+    checkboxTile: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        padding: '12px',
+        border: '2px solid',
+        borderRadius: '10px',
+        fontWeight: 'bold',
+        transition: 'all 0.2s ease'
+    }
+};

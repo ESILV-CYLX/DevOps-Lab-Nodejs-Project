@@ -19,6 +19,5 @@ export const login = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-    //TODO implement token invalidation or session destruction
     return res.json({ message: "Logout successful" });
 };

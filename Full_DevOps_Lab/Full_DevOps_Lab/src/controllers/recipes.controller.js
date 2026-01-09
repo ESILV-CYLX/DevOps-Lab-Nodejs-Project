@@ -87,7 +87,7 @@ export const updateRecipe = async (req, res) => {
       return res.status(403).json({ message: "You can only modify your own recipes" });
     }
 
-    const { title, prepTime, cookTime, difficulty, flavor, servings, cuisineType, ingredients, instructions, description, image, privacy } = req.body;
+    const { title, prepTime, cookTime, difficulty, flavor, isVegetarian, isGlutenFree, isLactoseFree, servings, cuisineType, ingredients, instructions, description, image, privacy } = req.body;
 
     if (title) recipe.title = title;
     if (prepTime) recipe.prepTime = prepTime;
@@ -100,6 +100,9 @@ export const updateRecipe = async (req, res) => {
     if (image) recipe.image = image;
     if (instructions) recipe.instructions = instructions;
     if (privacy !== undefined) recipe.privacy = privacy;
+    if (isVegetarian !== undefined) recipe.isVegetarian = isVegetarian;
+    if (isGlutenFree !== undefined) recipe.isGlutenFree = isGlutenFree;
+    if (isLactoseFree !== undefined) recipe.isLactoseFree = isLactoseFree;
 
     if (ingredients && Array.isArray(ingredients)) {
         recipe.ingredients = ingredients.map(ing => ({
