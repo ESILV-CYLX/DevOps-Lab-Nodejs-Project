@@ -22,6 +22,9 @@ const recipeSchema = new mongoose.Schema({
         required: true, 
         enum: Object.values(Flavors)
     },
+    isVegetarian: { type: Boolean, default: false },
+    isGlutenFree: { type: Boolean, default: false },
+    isLactoseFree: { type: Boolean, default: false },
     servings:    { type: Number, required: true },
     tags:        { type: [String], default: [] },
     instructions:{ type: [String], default: [] },

@@ -8,7 +8,6 @@ import usersRouter from "./routes/auto/users.route.js";
 import recipesRouter from "./routes/auto/recipes.route.js";
 import shoppingListRouter from "./routes/auto/shoppingList.route.js";
 import plannerRouter from "./routes/auto/planner.route.js";
-import pantryRouter from "./routes/auto/pantry.routes.js";
 import ingredientsRoute from './routes/auto/ingredients.route.js';
 const app = express();
 
@@ -23,7 +22,6 @@ app.use("/users", usersRouter);
 app.use("/recipes", recipesRouter);
 app.use("/shopping-list", shoppingListRouter);
 app.use("/planner", plannerRouter);
-app.use("/pantry", pantryRouter);
 app.use('/ingredients', ingredientsRoute);
 
 // Routes de base

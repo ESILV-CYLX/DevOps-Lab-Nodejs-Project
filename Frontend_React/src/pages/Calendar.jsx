@@ -344,10 +344,6 @@ export default function CalendarPage() {
                   <h4 style={{ margin: 0, fontWeight: 'bold', color: '#1a1a1a' }}>{planner.name}</h4>
                 </div>
 
-                <p style={{ fontSize: '0.85rem', color: '#666', margin: '0 0 15px 0' }}>
-                  {planner.createdAt ? `Created on ${new Date(planner.createdAt).toLocaleDateString()}` : 'No creation date available'}
-                </p>
-
                 <div style={{ display: 'flex', gap: '5px' }}>
                    <div style={{ background: '#f0f7ff', color: '#007bff', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
                      {planner.content ? Object.values(planner.content).flat().length : 0} Meals

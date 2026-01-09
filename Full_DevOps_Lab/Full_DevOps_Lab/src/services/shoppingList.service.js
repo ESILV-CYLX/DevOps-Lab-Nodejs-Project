@@ -5,7 +5,6 @@ export const getListByUserId = async (userId) => {
 };
 
 export const addItem = async (userId, newItem) => {
-  // Mise à jour item déjà existant (même nom & unité)
   const result = await ShoppingList.findOneAndUpdate(
     { 
       userId, 
@@ -18,7 +17,6 @@ export const addItem = async (userId, newItem) => {
     { new: true }
   );
 
-  // Si result est null, l'item n'existait pas, on l'ajoute au tableau
   if (!result) {
     return await ShoppingList.findOneAndUpdate(
       { userId },

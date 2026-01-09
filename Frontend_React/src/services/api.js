@@ -254,3 +254,24 @@ export const calendarService = {
     return true;
   }
 };
+
+export const userService = {
+  update: async (token, userId, userData) => {
+    const res = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      method: 'PUT',
+      headers: getHeaders(token),
+      body: JSON.stringify(userData)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to update user");
+    return data;
+  },
+  
+  getById: async (token, userId) => {
+    const res = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      headers: getHeaders(token)
+    });
+    if (!res.ok) throw new Error("Failed to fetch user");
+    return res.json();
+  }
+};

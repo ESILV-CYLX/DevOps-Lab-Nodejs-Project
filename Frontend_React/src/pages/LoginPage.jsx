@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/api';
+import { ArrowLeft } from 'lucide-react';
 
 export default function LoginPage() {
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -43,6 +44,33 @@ export default function LoginPage() {
 
   return (
     <div className="login-page-container">
+      <button 
+        onClick={() => navigate('/')}
+        style={{
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          color: '#666',
+          fontSize: '1rem',
+          fontWeight: '500',
+          transition: 'color 0.2s'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.color = '#000'}
+        onMouseLeave={(e) => e.currentTarget.style.color = '#666'}
+        title="Back to Dashboard"
+      >
+        <ArrowLeft size={20} /> 
+        <span>Back to Dashboard</span>
+      </button>
+
+
+
       <div className="login-card">
         <h1 style={{margin: '0 0 10px 0'}}>Smart Meal</h1>
         <p style={{marginBottom: '20px', color: '#666'}}>

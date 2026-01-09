@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -75,6 +75,18 @@ export default function Dashboard() {
     fetchData();
   }, [token, isLoggedIn]);
 
+  const isDietaryCompatible = (recipe) => {
+    if (!isLoggedIn || !user?.dietaryPreferences || user.dietaryPreferences.length === 0) {
+      return true;
+    }
+
+    const prefs = user.dietaryPreferences;
+    if (prefs.includes('vegetarian') && !recipe.isVegetarian) return false;
+    if (prefs.includes('glutenFree') && !recipe.isGlutenFree) return false;
+    if (prefs.includes('lactoseFree') && !recipe.isLactoseFree) return false;
+    return true;
+  };
+
   if (loading) return <div style={{padding:'40px'}}>Loading...</div>;
 
   return (
@@ -93,6 +105,11 @@ export default function Dashboard() {
           <p style={{margin: 0, color: '#666'}}>
             {isLoggedIn ? "What are you cooking today?" : "Explore our public recipes or log in to get cooking!"}
           </p>
+          {isLoggedIn && user?.dietaryPreferences?.length > 0 && (
+            <p style={{ fontSize: '0.85rem', color: '#2ecc71', marginTop: '5px' }}>
+              ✓ Filters applied: {user.dietaryPreferences.join(', ')}
+            </p>
+          )}
         </div>
         
         {isLoggedIn && (
@@ -122,9 +139,11 @@ export default function Dashboard() {
       {dashboardSections.map(section => {
         const sectionRecipes = recipes.filter(r => {
           if (!r || !r.title) return false;
+          const matchesDiet = isDietaryCompatible(r);
           const matchesSection = r.cuisineType ? section.filter(r) : false;
           const matchesSearch = r.title.toLowerCase().includes(searchTerm.toLowerCase());
-          return matchesSection && matchesSearch;
+
+          return matchesSection && matchesSearch && matchesDiet;
         });
 
         if (sectionRecipes.length === 0) return null;
@@ -151,6 +170,20 @@ export default function Dashboard() {
           </DashboardSection>
         );
       })}
+      
+      {recipes.length > 0 && dashboardSections.every(s => 
+        recipes.filter(r => isDietaryCompatible(r) && s.filter(r) && r.title.toLowerCase().includes(searchTerm.toLowerCase())).length === 0
+      ) && (
+        <div style={{ textAlign: 'center', marginTop: '50px', color: '#666' }}>
+          <p>No recipes match your current dietary filters or search term.</p>
+          <button 
+            onClick={() => navigate('/settings')}
+            style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            Adjust my settings
+          </button>
+        </div>
+      )}
       
       {recipes.length === 0 && !loading && (
           <div style={{textAlign: 'center', marginTop: '50px'}}>No recipes available.</div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowLeft, ChefHat, Plus, X, UploadCloud, AlertCircle, Lock, Globe } from 'lucide-react';
+import { ArrowLeft, ChefHat, Plus, X, UploadCloud, AlertCircle, Lock, Globe, Leaf, Wheat, Milk } from 'lucide-react';
 import { recipeService, ingredientService } from '../services/api';
 
 export default function CreateRecipe() {
@@ -25,6 +25,9 @@ export default function CreateRecipe() {
     cookTime: '',
     difficulty: 1,
     flavor: '',
+    isVegetarian: false,
+    isGlutenFree: false,
+    isLactoseFree: false,
     servings: 2,
     cuisineType: '',
     ingredients: [],
@@ -74,8 +77,11 @@ export default function CreateRecipe() {
 
   // HANDLERS
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   const handleImageChange = (e) => {
@@ -94,7 +100,6 @@ export default function CreateRecipe() {
   const handleIngredientChange = (index, field, value) => {
     const newIngredients = [...formData.ingredients];
     
-    // If changing category, reset the name
     if (field === 'category') {
         newIngredients[index].category = value;
         newIngredients[index].name = '';
@@ -154,13 +159,17 @@ export default function CreateRecipe() {
 
     setLoading(true);
 
-    // Prepare payload
-    const payload = {
+    const cleanedInstructions = formData.instructions
+      .map(step => step.trim()) // Enlève les espaces inutiles au début et à la fin
+      .filter(step => step !== ""); // Enlève les étapes vides
+
+      const payload = {
         ...formData,
         prepTime: parseInt(formData.prepTime) || 0,
         cookTime: parseInt(formData.cookTime) || 0,
         servings: parseInt(formData.servings) || 1,
         difficulty: parseInt(formData.difficulty) || 1,
+        instructions: cleanedInstructions,
         privacy: formData.privacy || false,
         ingredients: formData.ingredients.map(ing => ({
             name: ing.name,
@@ -222,6 +231,36 @@ export default function CreateRecipe() {
         <div style={{marginBottom: '25px'}}>
             <label style={{fontWeight: 'bold', display:'block', marginBottom:'8px'}}>Recipe Title *</label>
             <input name="title" value={formData.title} onChange={handleChange} className="login-input" required placeholder="e.g., Grandma's Lasagna" />
+        </div>
+
+        {/* DIETARY PREFERENCES */}
+        <div style={{ marginBottom: '30px', background: '#f0fdf4', padding: '20px', borderRadius: '12px', border: '1px solid #dcfce7' }}>
+            <label style={{fontWeight: 'bold', display:'block', marginBottom:'15px', color: '#166534'}}>Dietary Information</label>
+            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                <label style={styles.checkboxLabel}>
+                    <input type="checkbox" name="isVegetarian" checked={formData.isVegetarian} onChange={handleChange} style={styles.hiddenCheckbox} />
+                    <div style={{...styles.checkboxTile, borderColor: formData.isVegetarian ? '#22c55e' : '#ddd', background: formData.isVegetarian ? '#f0fdf4' : 'white'}}>
+                        <Leaf size={18} color={formData.isVegetarian ? '#22c55e' : '#666'} />
+                        <span style={{color: formData.isVegetarian ? '#166534' : '#666'}}>Vegetarian</span>
+                    </div>
+                </label>
+
+                <label style={styles.checkboxLabel}>
+                    <input type="checkbox" name="isGlutenFree" checked={formData.isGlutenFree} onChange={handleChange} style={styles.hiddenCheckbox} />
+                    <div style={{...styles.checkboxTile, borderColor: formData.isGlutenFree ? '#eab308' : '#ddd', background: formData.isGlutenFree ? '#fefce8' : 'white'}}>
+                        <Wheat size={18} color={formData.isGlutenFree ? '#eab308' : '#666'} />
+                        <span style={{color: formData.isGlutenFree ? '#854d0e' : '#666'}}>Gluten-Free</span>
+                    </div>
+                </label>
+
+                <label style={styles.checkboxLabel}>
+                    <input type="checkbox" name="isLactoseFree" checked={formData.isLactoseFree} onChange={handleChange} style={styles.hiddenCheckbox} />
+                    <div style={{...styles.checkboxTile, borderColor: formData.isLactoseFree ? '#3b82f6' : '#ddd', background: formData.isLactoseFree ? '#eff6ff' : 'white'}}>
+                        <Milk size={18} color={formData.isLactoseFree ? '#3b82f6' : '#666'} />
+                        <span style={{color: formData.isLactoseFree ? '#1e40af' : '#666'}}>Lactose-Free</span>
+                    </div>
+                </label>
+            </div>
         </div>
 
         {/* TIMES & SERVINGS */}
@@ -405,3 +444,25 @@ export default function CreateRecipe() {
     </div>
   );
 }
+
+const styles = {
+    checkboxLabel: {
+        cursor: 'pointer',
+        flex: '1',
+        minWidth: '140px'
+    },
+    hiddenCheckbox: {
+        display: 'none'
+    },
+    checkboxTile: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        padding: '12px',
+        border: '2px solid',
+        borderRadius: '10px',
+        fontWeight: 'bold',
+        transition: 'all 0.2s ease'
+    }
+};

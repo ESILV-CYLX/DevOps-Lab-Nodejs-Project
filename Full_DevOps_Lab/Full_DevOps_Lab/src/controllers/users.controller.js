@@ -2,23 +2,27 @@ import * as userService from "../services/users.service.js";
 import User from "../models/User.js";
 import Recipe from "../models/Recipe.js";
 
-export const getAllUsers = (req, res) => {
-    const users = userService.getAllUsers();
-    return res.json(users);
+export const getAllUsers = async (req, res) => {
+    try {
+        const users = await userService.getAllUsers();
+        return res.json(users);
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 };
 
-export const getUserById = (req, res) => {
+export const getUserById = async (req, res) => {
     try {
-        const user = userService.getUserById(req.params.id);
+        const user = await userService.getUserById(req.params.id);
         return res.json(user);
     } catch (err) {
         return res.status(err.status || 500).json({ error: err.message });
     }
 };
 
-export const updateUser = (req, res) => {
+export const updateUser = async (req, res) => {
     try {
-        const updatedUser = userService.updateUser(req.params.id, req.userId, req.body);
+        const updatedUser = await userService.updateUser(req.params.id, req.userId, req.body);
         return res.json(updatedUser);
     } catch (err) {
         return res.status(err.status || 500).json({ error: err.message });
@@ -77,7 +81,6 @@ export const toggleFavorite = async (req, res) => {
 
 export const getFavorites = async (req, res) => {
   try {
-    // FIX: Use req.userId here too
     const userId = req.userId;
     
     const user = await User.findOne({ userId });

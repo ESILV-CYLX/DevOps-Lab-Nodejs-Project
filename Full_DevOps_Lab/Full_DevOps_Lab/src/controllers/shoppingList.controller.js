@@ -4,10 +4,9 @@ import ShoppingList from '../models/ShoppingList.js';
 // GET /shopping-list
 const getShoppingList = async (req, res) => {
   try {
-    const userId = req.userId; // Extracted from Token
+    const userId = req.userId;
     const list = await shoppingService.getListByUserId(userId);
     
-    // Return empty structure if no list yet
     if (!list) {
       return res.status(200).json({ userId, items: [] });
     }
@@ -50,15 +49,14 @@ const updateItem = async (req, res) => {
 const deleteItem = async (req, res) => {
   try {
     const itemId = req.params.itemId;
-    const userId = req.userId; // Récupéré via authenticateToken
+    const userId = req.userId;
 
-    // On cherche la liste de l'utilisateur et on retire l'élément avec l'ID spécifié
     const updatedList = await ShoppingList.findOneAndUpdate(
       { userId: userId },
       { 
         $pull: { items: { _id: itemId } } 
       },
-      { new: true } // Renvoie la liste mise à jour
+      { new: true } 
     );
 
     if (!updatedList) {
@@ -78,7 +76,7 @@ const clearList = async (req, res) => {
         const userId = req.userId;
         const updatedList = await ShoppingList.findOneAndUpdate(
             { userId: userId },
-            { $set: { items: [] } }, // Vide le tableau items
+            { $set: { items: [] } },
             { new: true }
         );
         res.json(updatedList);
@@ -89,7 +87,7 @@ const clearList = async (req, res) => {
 
 export async function syncIngredients(req, res) {
     try {
-        const { ingredients } = req.body; // Reçoit le tableau d'ingrédients
+        const { ingredients } = req.body;
         const userId = req.userId;
 
         if (!ingredients || !Array.isArray(ingredients)) {

@@ -157,12 +157,17 @@ export default function ModifyRecipe() {
         }
     }
     
+    const cleanedInstructions = formData.instructions
+      .map(step => step.trim())
+      .filter(step => step !== "");
+
     const payload = {
         ...formData,
         prepTime: parseInt(formData.prepTime) || 0,
         cookTime: parseInt(formData.cookTime) || 0,
         servings: parseInt(formData.servings) || 1,
         difficulty: parseInt(formData.difficulty) || 1,
+        instructions: cleanedInstructions,
         privacy: formData.privacy,
         ingredients: formData.ingredients.map(ing => ({
             name: ing.name,
@@ -177,6 +182,7 @@ export default function ModifyRecipe() {
     delete payload.recipeId;
 
     try {
+      console.log("Payload envoyé :", payload);
       await recipeService.update(token, id, payload);
       alert("Recipe updated!");
       navigate(`/recipe/${id}`);

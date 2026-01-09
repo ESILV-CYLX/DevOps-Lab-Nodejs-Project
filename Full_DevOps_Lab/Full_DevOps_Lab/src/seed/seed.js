@@ -1,3 +1,5 @@
+// The whole original database
+// Can be re created by removing all comments and running 'node src/seed/seed.js' in the terminal
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
@@ -218,6 +220,9 @@ const recipesData = [
         difficulty: 1,
         cuisineType: "Italian",
         flavor: "Salty",
+        isVegetarian:false,
+        isGlutenFree:false,
+        isLactoseFree:false,
         servings: 2,
         tags: ["pasta", "fast"],
         image: "https://images.unsplash.com/photo-1612874742237-6526221588e3",
@@ -244,6 +249,9 @@ const recipesData = [
         difficulty: 1,
         cuisineType: "Asian",
         flavor: "Salty",
+        isVegetarian:false,
+        isGlutenFree:true,
+        isLactoseFree:true,
         servings: 2,
         tags: ["healthy", "protein"],
         image: "https://imgs.search.brave.com/R7HVAuBO-zNiPCf7Oxyyahtf0fSdF3LHXZD4Seju7uk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9kMXZi/bjcwbG1uMW5xZS5j/bG91ZGZyb250Lm5l/dC9wcm9kL3dwLWNv/bnRlbnQvdXBsb2Fk/cy8yMDIzLzA3LzE0/MDgyOTQ3L0luaS1S/ZXNlcC1SaWNlLUJv/d2wtU2VoYXQtZGFu/LVBhZGF0LU51dHJp/c2ktdW50dWstQmVr/YWwtLmpwZy53ZWJw",
@@ -268,6 +276,9 @@ const recipesData = [
         difficulty: 3,
         cuisineType: "Korean",
         flavor: "Savory",
+        isVegetarian:false,
+        isGlutenFree:true,
+        isLactoseFree:true,
         servings: 2,
         tags: ["noodles", "comfort food"],
         image: "https://images.unsplash.com/photo-1590301157890-4810ed352733",
@@ -296,6 +307,9 @@ const recipesData = [
         difficulty: 2,
         cuisineType: "Vietnamese",
         flavor: "Savory",
+        isVegetarian:false,
+        isGlutenFree:true,
+        isLactoseFree:true,
         servings: 2,
         tags: ["street food", "pancake"],
         image: "https://images.unsplash.com/photo-1632288349277-22687c71d643",
@@ -323,6 +337,9 @@ const recipesData = [
         difficulty: 2,
         cuisineType: "French",
         flavor: "Savory",
+        isVegetarian:false,
+        isGlutenFree:false,
+        isLactoseFree:true,
         servings: 2,
         tags: ["raw", "gourmet"],
         image: "https://imgs.search.brave.com/Z5_U8onRX63m6Xtdr7GPMgWnt9bW8zCamzvuGcxMVPs/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvOTA5/NTI1NzE2L2ZyL3Bo/b3RvL2hlcmJlcy1v/ZXVmcy1ldC12aWFu/ZGUtaGFjaCVDMyVB/OWUuanBnP3M9NjEy/eDYxMiZ3PTAmaz0y/MCZjPUh6R000Y19K/ODF2NlpxSlFLTmpI/c05VSUVERy1CdjRD/RUFJLWk1UXV4MDA9",
@@ -351,6 +368,9 @@ const recipesData = [
         difficulty: 2,
         cuisineType: "Indian",
         flavor: "Spicy",
+        isVegetarian:false,
+        isGlutenFree:true,
+        isLactoseFree:false,
         servings: 4,
         tags: ["curry", "chicken"],
         image: "https://imgs.search.brave.com/UOkvAjtUW1RkZz74RDV-UT3gwqH37584F8wlm1ZnqQA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wNDEv/NzE1LzE1Mi9zbWFs/bC9jaGlja2VuLXRp/a2thLW1hc2FsYS1z/cGljeS1jdXJyeS1t/ZWF0LWZvb2Qtd2l0/aC1yb3RpLW9yLW5h/YW4tYnJlYWQtcGhv/dG8uanBn",
@@ -380,6 +400,9 @@ const recipesData = [
         difficulty: 3,
         cuisineType: "Spanish",
         flavor: "Savory",
+        isVegetarian:false,
+        isGlutenFree:true,
+        isLactoseFree:true,
         servings: 4,
         tags: ["rice", "seafood"],
         image: "https://imgs.search.brave.com/cFL9VW8idh4YwmC4FeggAaUebp08VokKXyK2HCKkTX8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTMw/NDEwNTg5MS9mci9w/aG90by90eXBpY2Fs/LXBhZWxsYS12YWxl/bmNpYW5hLmpwZz9z/PTYxMng2MTImdz0w/Jms9MjAmYz1yQW93/U3ljOTc1TUFGdEFs/bVRKU2ZTb1FvbG9J/Z0V4dlZhQS05Ny0x/NnlBPQ",
@@ -411,6 +434,9 @@ const recipesData = [
         difficulty: 3,
         cuisineType: "Greek",
         flavor: "Savory",
+        isVegetarian:false,
+        isGlutenFree:true,
+        isLactoseFree:false,
         servings: 6,
         tags: ["casserole", "comfort food"],
         image: "https://imgs.search.brave.com/y2p0Yv468_TN8mJ2UI1opomovSwPNV6PqMf8lTuKX-Q/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzE0Lzk0LzIwLzQ1/LzM2MF9GXzE0OTQy/MDQ1ODNfc2VMT21H/dW9penlna2g4cG1R/dXdFSnROZkxoWUo2/eHAuanBn",
@@ -441,6 +467,9 @@ const recipesData = [
         difficulty: 2,
         cuisineType: "Mexican",
         flavor: "Spicy",
+        isVegetarian:false,
+        isGlutenFree:false,
+        isLactoseFree:true,
         servings: 4,
         tags: ["street food", "tacos"],
         image: "https://imgs.search.brave.com/JEzxaxeDVRAPmprcudrA5HTir_UtjNN6fTkanoXYKL8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/bXV5ZGVsaXNoLmNv/bS93cC1jb250ZW50/L3VwbG9hZHMvMjAy/My8wNS9yZWNpcGUt/YWwtcGFzdG9yLXRh/Y29zLmpwZw",
@@ -468,6 +497,9 @@ const recipesData = [
         difficulty: 3,
         cuisineType: "Japanese",
         flavor: "Mild",
+        isVegetarian:false,
+        isGlutenFree:true,
+        isLactoseFree:true,
         servings: 4,
         tags: ["sushi", "healthy"],
         image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c",
@@ -495,6 +527,9 @@ const recipesData = [
         difficulty: 2,
         cuisineType: "Middle Eastern",
         flavor: "Savory",
+        isVegetarian:true,
+        isGlutenFree:true,
+        isLactoseFree:true,
         servings: 4,
         tags: ["vegetarian", "appetizer"],
         image: "https://imgs.search.brave.com/wJh-6srCIKXyk4VnkCQWZejJx1V1jrJZn52HR9A1dJQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9teXB1/cmVwbGFudHMuY29t/L3dwLWNvbnRlbnQv/dXBsb2Fkcy8yMDIy/LzA5L0ZhbGFmZWwt/cGxhdHRlci03Lmpw/Zw",
@@ -543,11 +578,9 @@ async function seed() {
             return {
                 ...recipe,
                 ingredients: recipe.ingredients.map(ing => {
-                    // On cherche l'ingrédient correspondant dans ingredientsData
                     const reference = ingredientsData.find(i => i.ingredientId === ing.ingredientId);
                     return {
                         ...ing,
-                        // On injecte la catégorie trouvée ou 'OTHER' par défaut
                         category: reference ? reference.category : IngredientCategory.OTHER
                     };
                 })

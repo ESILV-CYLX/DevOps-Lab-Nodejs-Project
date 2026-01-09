@@ -1,5 +1,4 @@
 import Recipe from "../models/Recipe.js";
-import User from "../models/User.js"; 
 import { CuisineType } from "../models/enums/CuisineType.js";
 import { Flavors } from "../models/enums/Flavors.js";
 import { Units } from "../models/enums/Units.js";
@@ -79,7 +78,7 @@ export const updateRecipe = async (req, res) => {
     const recipeId = parseInt(req.params.id);
     const userId = req.userId;
 
-    console.log(`[UPDATE] Recipe: ${recipeId}, User: ${userId}`);
+    //console.log(`[UPDATE] Recipe: ${recipeId}, User: ${userId}`);
 
     const recipe = await Recipe.findOne({ recipeId });
     if (!recipe) return res.status(404).json({ message: "Recipe not found" });
@@ -100,7 +99,7 @@ export const updateRecipe = async (req, res) => {
     if (description) recipe.description = description;
     if (image) recipe.image = image;
     if (instructions) recipe.instructions = instructions;
-    if (privacy) recipe.privacy = privacy;
+    if (privacy !== undefined) recipe.privacy = privacy;
 
     if (ingredients && Array.isArray(ingredients)) {
         recipe.ingredients = ingredients.map(ing => ({
@@ -113,12 +112,11 @@ export const updateRecipe = async (req, res) => {
 
     const updatedRecipe = await recipe.save();
     
-    console.log("[UPDATE] Success!");
+    //console.log("[UPDATE] Success!");
     res.json(updatedRecipe);
 
   } catch (err) {
     console.error("Update Error:", err);
-    // Print Validation Errors if they exist
     if (err.errors) {
         Object.keys(err.errors).forEach(key => {
             console.error(`Validation Error on ${key}: ${err.errors[key].message}`);
