@@ -1,4 +1,5 @@
 PROJECT LAUNCH
+
 Warning : To launch the project, make sure to add a env. file with the following informations:
 MONGO_URI= "mongodb+srv://ICI:ICI@software-eng.qulphpl.mongodb.net/ICI?retryWrites=true&w=majority"
 MONGO_USERNAME=""
